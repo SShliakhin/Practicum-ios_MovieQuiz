@@ -25,10 +25,6 @@ extension MovieQuizViewController {
     private func applyStyle() {
         view.backgroundColor = UIColor.ypBlack
         
-        buttonsStackView.axis = .horizontal
-        buttonsStackView.distribution = .fillEqually
-        buttonsStackView.spacing = 20
-        
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
     }
@@ -49,6 +45,10 @@ extension MovieQuizViewController {
             item.translatesAutoresizingMaskIntoConstraints = false
             buttonsStackView.addArrangedSubview(item)
         }
+        
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.distribution = .fillEqually
+        buttonsStackView.spacing = 20
         
         buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(buttonsStackView)
