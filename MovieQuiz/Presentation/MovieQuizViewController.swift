@@ -35,7 +35,7 @@ extension MovieQuizViewController {
     
     private func applyStyleAnswerButton(for button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = UIFont(name: "YS Display-Medium", size: 16)
+        button.titleLabel?.font = UIFont(name: "YS Display-Medium", size: 20)
         button.setTitleColor(UIColor.ypBlack, for: .normal)
         button.backgroundColor = UIColor.ypWhite
         button.layer.cornerRadius = 15
