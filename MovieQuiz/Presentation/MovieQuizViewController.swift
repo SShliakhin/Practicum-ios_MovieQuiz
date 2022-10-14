@@ -1,9 +1,80 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
+    
+    private let buttonsStackView = UIStackView()
+    private let yesButton = UIButton()
+    private let noButton = UIButton()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setup()
+        applyStyle()
+        applyLayout()
+    }
+}
+
+// MARK: - Private methods
+extension MovieQuizViewController {
+    private func setup() {
+        yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
+        noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
+    }
+
+    private func applyStyle() {
+        view.backgroundColor = UIColor.ypBlack
+        
+        buttonsStackView.axis = .horizontal
+        buttonsStackView.distribution = .fillEqually
+        buttonsStackView.spacing = 20
+        
+        applyStyleAnswerButton(for: yesButton, title: "Да")
+        applyStyleAnswerButton(for: noButton, title: "Нет")
+    }
+    
+    private func applyStyleAnswerButton(for button: UIButton, title: String) {
+        button.setTitle(title, for: .normal)
+        button.titleLabel?.font = UIFont(name: "YS Display-Medium", size: 16)
+        button.setTitleColor(UIColor.ypBlack, for: .normal)
+        button.backgroundColor = UIColor.ypWhite
+        button.layer.cornerRadius = 15
+        button.layer.masksToBounds = true
+    }
+
+    private func applyLayout() {
+        [ noButton,
+          yesButton
+        ].forEach { item in
+            item.translatesAutoresizingMaskIntoConstraints = false
+            buttonsStackView.addArrangedSubview(item)
+        }
+        
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(buttonsStackView)
+        
+        NSLayoutConstraint.activate([
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            buttonsStackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 718),
+            buttonsStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -34),
+            
+            noButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 158),
+            noButton.heightAnchor.constraint(equalToConstant: 60),
+            yesButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 158),
+            yesButton.heightAnchor.constraint(equalToConstant: 60),
+        ])
+    }
+}
+
+// MARK: - Actions
+extension MovieQuizViewController {
+    @objc func yesButtonTapped() {
+        print("Select YES")
+    }
+    
+    @objc func noButtonTapped() {
+        print("Select NO")
     }
 }
 
