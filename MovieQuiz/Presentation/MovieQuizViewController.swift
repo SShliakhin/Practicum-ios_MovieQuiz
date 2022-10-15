@@ -39,19 +39,19 @@ extension MovieQuizViewController {
         questionTitleLabel.text = "Вопрос:"
         questionTitleLabel.textColor = UIColor.ypWhite
         questionTitleLabel.textAlignment = .left
-        questionTitleLabel.font = UIFont(name: "YS Display-Medium", size: 20)
+        questionTitleLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
         
         questionIndexLabel.text = "1/10"
         questionIndexLabel.textColor = UIColor.ypWhite
         questionIndexLabel.textAlignment = .right
-        questionIndexLabel.font = UIFont(name: "YS Display-Medium", size: 20)
+        questionIndexLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
         
         containerView.backgroundColor = .ypBlack
         
         questionLabel.text = "Рейтинг этого фильма меньше чем 5?"
         questionLabel.textColor = UIColor.ypWhite
         questionLabel.textAlignment = .center
-        questionLabel.font = UIFont(name: "YS Display-Bold", size: 23)
+        questionLabel.font = UIFont(name: "YSDisplay-Bold", size: 23)
         questionLabel.numberOfLines = 0
         
         previewImageView.contentMode = .scaleAspectFill
@@ -63,7 +63,7 @@ extension MovieQuizViewController {
     
     private func applyStyleAnswerButton(for button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = UIFont(name: "YS Display-Medium", size: 20)
+        button.titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 20)
         button.setTitleColor(UIColor.ypBlack, for: .normal)
         button.backgroundColor = UIColor.ypWhite
         button.layer.cornerRadius = 15
