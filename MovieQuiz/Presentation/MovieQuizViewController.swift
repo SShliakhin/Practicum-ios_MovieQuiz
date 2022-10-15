@@ -2,6 +2,17 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController {
     
+    private let mainStackView = UIStackView()
+    
+    private let questionTitleStackView = UIStackView()
+    private let questionTitleLabel = UILabel()
+    private let questionIndexLabel = UILabel()
+        
+    private let previewImageView = UIImageView()
+    
+    private let containerView = UIView()
+    private let questionLabel = UILabel()
+    
     private let buttonsStackView = UIStackView()
     private let yesButton = UIButton()
     private let noButton = UIButton()
@@ -25,6 +36,27 @@ extension MovieQuizViewController {
     private func applyStyle() {
         view.backgroundColor = UIColor.ypBlack
         
+        questionTitleLabel.text = "Вопрос:"
+        questionTitleLabel.textColor = UIColor.ypWhite
+        questionTitleLabel.textAlignment = .left
+        questionTitleLabel.font = UIFont(name: "YS Display-Medium", size: 20)
+        
+        questionIndexLabel.text = "1/10"
+        questionIndexLabel.textColor = UIColor.ypWhite
+        questionIndexLabel.textAlignment = .right
+        questionIndexLabel.font = UIFont(name: "YS Display-Medium", size: 20)
+        
+        containerView.backgroundColor = .ypBlack
+        
+        questionLabel.text = "Рейтинг этого фильма меньше чем 5?"
+        questionLabel.textColor = UIColor.ypWhite
+        questionLabel.textAlignment = .center
+        questionLabel.font = UIFont(name: "YS Display-Bold", size: 23)
+        questionLabel.numberOfLines = 0
+        
+        previewImageView.contentMode = .scaleAspectFill
+        previewImageView.backgroundColor = UIColor.ypWhite
+        
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
     }
@@ -39,31 +71,66 @@ extension MovieQuizViewController {
     }
 
     private func applyLayout() {
-        [ noButton,
-          yesButton
-        ].forEach { item in
-            item.translatesAutoresizingMaskIntoConstraints = false
-            buttonsStackView.addArrangedSubview(item)
-        }
         
-        buttonsStackView.axis = .horizontal
-        buttonsStackView.distribution = .fillEqually
-        buttonsStackView.spacing = 20
+        arrangeStackView(
+            for: questionTitleStackView,
+               subviews: [questionTitleLabel, questionIndexLabel])
         
-        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(buttonsStackView)
+        questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        
+        arrangeStackView(
+            for: buttonsStackView,
+               subviews: [noButton, yesButton],
+               spacing: 20,
+               distribution: .fillEqually)
+        
+        questionLabel.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(questionLabel)
+        
+        arrangeStackView(
+            for: mainStackView,
+               subviews: [questionTitleStackView, previewImageView, containerView, buttonsStackView],
+               spacing: 20,
+               axis: .vertical)
+        
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mainStackView)
         
         NSLayoutConstraint.activate([
-            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            buttonsStackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 718),
-            buttonsStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -34),
+            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            mainStackView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            noButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 158),
+            previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: 3/2),
+            
+            questionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 42),
+            questionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -42),
+            questionLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 13),
+            questionLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -13),
+            
             noButton.heightAnchor.constraint(equalToConstant: 60),
-            yesButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 158),
             yesButton.heightAnchor.constraint(equalToConstant: 60),
         ])
+    }
+    
+    private func arrangeStackView(
+        for stackView: UIStackView,
+        subviews: [UIView],
+        spacing: CGFloat = 0,
+        axis: NSLayoutConstraint.Axis = .horizontal,
+        distribution: UIStackView.Distribution = .fill,
+        aligment: UIStackView.Alignment = .fill
+    ) {
+        stackView.axis = axis
+        stackView.spacing = spacing
+        stackView.distribution = distribution
+        stackView.alignment = aligment
+        
+        subviews.forEach { item in
+            item.translatesAutoresizingMaskIntoConstraints = false
+            stackView.addArrangedSubview(item)
+        }
     }
 }
 
