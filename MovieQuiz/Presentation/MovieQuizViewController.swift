@@ -10,7 +10,7 @@ final class MovieQuizViewController: UIViewController {
         
     private let previewImageView = UIImageView()
     
-    private let containerView = UIView()
+    private let questionLabelView = UIView()
     private let questionLabel = UILabel()
     
     private let buttonsStackView = UIStackView()
@@ -36,29 +36,38 @@ extension MovieQuizViewController {
     private func applyStyle() {
         view.backgroundColor = UIColor.ypBlack
         
-        questionTitleLabel.text = "Вопрос:"
-        questionTitleLabel.textColor = UIColor.ypWhite
-        questionTitleLabel.textAlignment = .left
-        questionTitleLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
-        
-        questionIndexLabel.text = "1/10"
-        questionIndexLabel.textColor = UIColor.ypWhite
-        questionIndexLabel.textAlignment = .right
-        questionIndexLabel.font = UIFont(name: "YSDisplay-Medium", size: 20)
-        
-        containerView.backgroundColor = .ypBlack
-        
-        questionLabel.text = "Рейтинг этого фильма меньше чем 5?"
-        questionLabel.textColor = UIColor.ypWhite
-        questionLabel.textAlignment = .center
-        questionLabel.font = UIFont(name: "YSDisplay-Bold", size: 23)
-        questionLabel.numberOfLines = 0
+        applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
+        applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
         
         previewImageView.contentMode = .scaleAspectFill
         previewImageView.backgroundColor = UIColor.ypWhite
         
+        questionLabelView.backgroundColor = .ypBlack
+        
+        applyStyleLabel(
+            for: questionLabel,
+               text: "Рейтинг этого фильма меньше чем 5?",
+               font: UIFont(name: "YSDisplay-Bold", size: 23),
+               textAlignment: .center,
+               numberOfLines: 0)
+        
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
+    }
+    
+    private func applyStyleLabel(
+        for label: UILabel,
+        text: String,
+        font: UIFont? = UIFont(name: "YSDisplay-Medium", size: 20),
+        textColor: UIColor = UIColor.ypWhite,
+        textAlignment: NSTextAlignment = .left,
+        numberOfLines: Int = 1
+    ) {
+        label.text = text
+        label.font = font
+        label.textColor = textColor
+        label.textAlignment = textAlignment
+        label.numberOfLines = numberOfLines
     }
     
     private func applyStyleAnswerButton(for button: UIButton, title: String) {
@@ -78,18 +87,18 @@ extension MovieQuizViewController {
         
         questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
+        questionLabel.translatesAutoresizingMaskIntoConstraints = false
+        questionLabelView.addSubview(questionLabel)
+        
         arrangeStackView(
             for: buttonsStackView,
                subviews: [noButton, yesButton],
                spacing: 20,
                distribution: .fillEqually)
         
-        questionLabel.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(questionLabel)
-        
         arrangeStackView(
             for: mainStackView,
-               subviews: [questionTitleStackView, previewImageView, containerView, buttonsStackView],
+               subviews: [questionTitleStackView, previewImageView, questionLabelView, buttonsStackView],
                spacing: 20,
                axis: .vertical)
         
@@ -104,10 +113,10 @@ extension MovieQuizViewController {
             
             previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: 3/2),
             
-            questionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 42),
-            questionLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -42),
-            questionLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 13),
-            questionLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -13),
+            questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: 42),
+            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -42),
+            questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: 13),
+            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -13),
             
             noButton.heightAnchor.constraint(equalToConstant: 60),
             yesButton.heightAnchor.constraint(equalToConstant: 60),
