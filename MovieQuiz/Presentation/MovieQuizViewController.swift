@@ -17,18 +17,116 @@ final class MovieQuizViewController: UIViewController {
     private let yesButton = UIButton()
     private let noButton = UIButton()
     
+    // MARK: - Properties
+    private var currentQuestionIndex = 0
+    private var questions: [QuizQuestion] = []
+    private var correctAnswers: Int = 0
+    
+    // MARK: - ViewModels
+    // для состояния "Вопрос задан"
+    private struct QuizStepViewModel {
+        let image: UIImage
+        let question: String
+        let questionNumber: String
+    }
+    
+    // для состояния "Результат квиза"
+    private struct QuizResultsViewModel {
+        let title: String
+        let text: String
+        let buttonText: String
+    }
+    
+    // вопрос
+    private struct QuizQuestion {
+        let image: String
+        let text: String
+        let correctAnswer: Bool
+    }
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
         applyStyle()
         applyLayout()
+        
+        show()
     }
 }
 
-// MARK: - Private methods
+// MARK: - State's methods
+extension MovieQuizViewController {
+    private func show() {
+        let currentQuestion = questions[currentQuestionIndex]
+        let quiz = convert(model: currentQuestion)
+        show(quiz: quiz)
+    }
+    
+    private func show(quiz step: QuizStepViewModel) {
+        questionIndexLabel.text = step.questionNumber
+        previewImageView.image = step.image
+        questionLabel.text = step.question
+        
+        setPreviewImageViewBorder()
+    }
+    
+    private func show(quiz result: QuizResultsViewModel) {
+        let alert = UIAlertController(
+            title: result.title,
+            message: result.text,
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
+            self.correctAnswers = 0
+            self.currentQuestionIndex = 0
+            self.show()
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func showNextQuestionOrResults() {
+        if currentQuestionIndex == questions.count - 1 {
+            let text = "Ваш результат: \(correctAnswers) из \(questions.count)"
+            let result = QuizResultsViewModel(
+                title: "Раунд окончен!",
+                text: text,
+                buttonText: "Сыграть ещё раз")
+            show(quiz: result)
+        } else {
+            currentQuestionIndex += 1
+            show()
+        }
+    }
+    
+    private func showAnswerResult(isCorrect: Bool) {
+        if isCorrect {
+            correctAnswers += 1
+        }
+        let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+        setPreviewImageViewBorder(width: 8, color: color)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // запускаем задачу через 1 секунду
+            self.showNextQuestionOrResults()
+        }
+    }
+    
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+        QuizStepViewModel(
+            image: UIImage(named: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+    }
+}
+
+// MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
+        questions = loadMockData()
+        
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
     }
@@ -41,6 +139,8 @@ extension MovieQuizViewController {
         
         previewImageView.contentMode = .scaleAspectFill
         previewImageView.backgroundColor = UIColor.ypWhite
+        previewImageView.layer.cornerRadius = 20
+        previewImageView.layer.masksToBounds = true
         
         questionLabelView.backgroundColor = .ypBlack
         
@@ -80,7 +180,6 @@ extension MovieQuizViewController {
     }
 
     private func applyLayout() {
-        
         arrangeStackView(
             for: questionTitleStackView,
                subviews: [questionTitleLabel, questionIndexLabel])
@@ -141,89 +240,70 @@ extension MovieQuizViewController {
             stackView.addArrangedSubview(item)
         }
     }
+    
+    private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
+        previewImageView.layer.borderWidth = width
+        previewImageView.layer.borderColor = color
+    }
 }
 
 // MARK: - Actions
 extension MovieQuizViewController {
     @objc func yesButtonTapped() {
-        print("Select YES")
+        let currentQuestion = questions[currentQuestionIndex]
+        showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
     }
     
     @objc func noButtonTapped() {
-        print("Select NO")
+        let currentQuestion = questions[currentQuestionIndex]
+        showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
     }
 }
 
-// MARK: - Color
-extension UIColor {
-    static var ypBlack: UIColor { UIColor(named: "black")! }
-    static var ypGray: UIColor { UIColor(named: "gray")! }
-    static var ypGreen: UIColor { UIColor(named: "green")! }
-    static var ypRed: UIColor { UIColor(named: "red")! }
-    static var ypWhite: UIColor { UIColor(named: "white")! }
-    static var ypBackground: UIColor { UIColor(named: "background")! }
+// MARK: - Mock data
+extension MovieQuizViewController {
+    private func loadMockData() -> [QuizQuestion]{
+        [
+            QuizQuestion(
+                image: "The Godfather",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "The Dark Knight",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "Kill Bill",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "The Avengers",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "Deadpool",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "The Green Knight",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: true),
+            QuizQuestion(
+                image: "Old",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: false),
+            QuizQuestion(
+                image: "The Ice Age Adventures of Buck Wild",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: false),
+            QuizQuestion(
+                image: "Tesla",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: false),
+            QuizQuestion(
+                image: "Vivarium",
+                text: "Рейтинг этого фильма больше чем 6?",
+                correctAnswer: false)
+        ]
+    }
 }
-
-/*
- Mock-данные
- 
- 
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- */
