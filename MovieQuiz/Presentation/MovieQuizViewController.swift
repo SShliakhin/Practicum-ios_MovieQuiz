@@ -18,9 +18,13 @@ final class MovieQuizViewController: UIViewController {
     private let noButton = UIButton()
     
     // MARK: - Properties
-    private var currentQuestionIndex = 0
+    private var currentQuestionIndex = 0 {
+        didSet {
+            show()
+        }
+    }
     private var questions: [QuizQuestion] = []
-    private var correctAnswers: Int = 0
+    private var correctAnswers = 0
     
     // MARK: - ViewModels
     // для состояния "Вопрос задан"
@@ -51,12 +55,18 @@ final class MovieQuizViewController: UIViewController {
         applyStyle()
         applyLayout()
         
-        show()
+        startQuiz()
     }
 }
 
 // MARK: - State's methods
 extension MovieQuizViewController {
+    private func startQuiz() {
+        questions.shuffle()
+        currentQuestionIndex = 0
+        correctAnswers = 0
+    }
+    
     private func show() {
         let currentQuestion = questions[currentQuestionIndex]
         let quiz = convert(model: currentQuestion)
@@ -78,9 +88,7 @@ extension MovieQuizViewController {
             preferredStyle: .alert)
         
         let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
-            self.correctAnswers = 0
-            self.currentQuestionIndex = 0
-            self.show()
+            self.startQuiz()
         }
         
         alert.addAction(action)
@@ -98,7 +106,6 @@ extension MovieQuizViewController {
             show(quiz: result)
         } else {
             currentQuestionIndex += 1
-            show()
         }
     }
     
