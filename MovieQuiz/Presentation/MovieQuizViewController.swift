@@ -107,7 +107,7 @@ extension MovieQuizViewController {
             correctAnswers += 1
         }
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        setPreviewImageViewBorder(width: 8, color: color)
+        setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // запускаем задачу через 1 секунду
             self.showNextQuestionOrResults()
@@ -132,14 +132,14 @@ extension MovieQuizViewController {
     }
 
     private func applyStyle() {
-        view.backgroundColor = UIColor.ypBlack
+        view.backgroundColor = .ypBlack // не уверен, так как есть .ypBackground, но он не соответствует макетам
         
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
         applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
         
         previewImageView.contentMode = .scaleAspectFill
-        previewImageView.backgroundColor = UIColor.ypWhite
-        previewImageView.layer.cornerRadius = 20
+        previewImageView.backgroundColor = .ypWhite
+        previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
         
         questionLabelView.backgroundColor = .ypBlack
@@ -147,7 +147,7 @@ extension MovieQuizViewController {
         applyStyleLabel(
             for: questionLabel,
                text: "Рейтинг этого фильма меньше чем 5?",
-               font: UIFont(name: "YSDisplay-Bold", size: 23),
+               font: Theme.boldLargeFont,
                textAlignment: .center,
                numberOfLines: 0)
         
@@ -158,8 +158,8 @@ extension MovieQuizViewController {
     private func applyStyleLabel(
         for label: UILabel,
         text: String,
-        font: UIFont? = UIFont(name: "YSDisplay-Medium", size: 20),
-        textColor: UIColor = UIColor.ypWhite,
+        font: UIFont? = Theme.mediumLargeFont,
+        textColor: UIColor = .ypWhite,
         textAlignment: NSTextAlignment = .left,
         numberOfLines: Int = 1
     ) {
@@ -172,11 +172,11 @@ extension MovieQuizViewController {
     
     private func applyStyleAnswerButton(for button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 20)
-        button.setTitleColor(UIColor.ypBlack, for: .normal)
-        button.backgroundColor = UIColor.ypWhite
-        button.layer.cornerRadius = 15
-        button.layer.masksToBounds = true
+        button.titleLabel?.font = Theme.mediumLargeFont
+        button.setTitleColor(.ypBlack, for: .normal)
+        button.backgroundColor = .ypWhite
+        button.layer.cornerRadius = Theme.buttonCornerRadius
+        button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
     }
 
     private func applyLayout() {
@@ -192,33 +192,33 @@ extension MovieQuizViewController {
         arrangeStackView(
             for: buttonsStackView,
                subviews: [noButton, yesButton],
-               spacing: 20,
+               spacing: Theme.spacing,
                distribution: .fillEqually)
         
         arrangeStackView(
             for: mainStackView,
                subviews: [questionTitleStackView, previewImageView, questionLabelView, buttonsStackView],
-               spacing: 20,
+               spacing: Theme.spacing,
                axis: .vertical)
         
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mainStackView)
         
         NSLayoutConstraint.activate([
-            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Theme.leftOffset),
+            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Theme.leftOffset),
+            mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Theme.topOffset),
             mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: 3/2),
+            previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: Theme.imageHeightAspect),
             
-            questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: 42),
-            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -42),
-            questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: 13),
-            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -13),
+            questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: Theme.leftQuestionPadding),
+            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -Theme.leftQuestionPadding), // покзать, что слева такой же отступ
+            questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: Theme.topQuestionPadding),
+            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding), // показать, что сверху такой же отступ
             
-            noButton.heightAnchor.constraint(equalToConstant: 60),
-            yesButton.heightAnchor.constraint(equalToConstant: 60),
+            noButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // может достаточно одного ограничения, чтобы задать высоту для стека?
+            yesButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // или лучше пусть будет у каждой кнопки?
         ])
     }
     
@@ -258,6 +258,29 @@ extension MovieQuizViewController {
         let currentQuestion = questions[currentQuestionIndex]
         showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
     }
+}
+
+// MARK: - Theme
+// ищу более корректное оформление констант - отдельный файл(-ы), типы: структура, перечисление или класс, пока в одном классе, хелп!
+// ищу более корректное наименования для констан, пока так, хелп!
+final class Theme {
+    static let boldLargeFont = UIFont(name: "YSDisplay-Bold", size: 23)
+    static let boldSmallFont = UIFont(name: "YSDisplay-Bold", size: 18)
+    static let mediumLargeFont = UIFont(name: "YSDisplay-Medium", size: 20)
+    static let mediumSmallFont = UIFont(name: "YSDisplay-Medium", size: 16)
+    
+    static let buttonCornerRadius: CGFloat = 15
+    static let buttonHeight: CGFloat = 60
+    
+    static let imageCornerRadius: CGFloat = 20
+    static let imageAnswerBorderWidht: CGFloat = 8
+    static let imageHeightAspect: CGFloat = 3/2
+    
+    static let spacing: CGFloat = 20
+    static let leftOffset: CGFloat = 20
+    static let topOffset: CGFloat = 10
+    static let leftQuestionPadding: CGFloat = 42
+    static let topQuestionPadding: CGFloat = 13
 }
 
 // MARK: - Mock data
