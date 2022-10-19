@@ -20,7 +20,7 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            show()
+            showCurrentQuestion()
         }
     }
     private var questions: [QuizQuestion] = []
@@ -67,7 +67,7 @@ extension MovieQuizViewController {
         correctAnswers = 0
     }
     
-    private func show() {
+    private func showCurrentQuestion() {
         let currentQuestion = questions[currentQuestionIndex]
         let quiz = convert(model: currentQuestion)
         show(quiz: quiz)
@@ -272,7 +272,7 @@ extension MovieQuizViewController {
 // MARK: - Theme
 // ищу более корректное оформление констант - отдельный файл(-ы), типы: структура, перечисление или класс, пока в одном классе, хелп!
 // ищу более корректное наименования для констан, пока так, хелп!
-final class Theme {
+enum Theme {
     static let boldLargeFont = UIFont(name: "YSDisplay-Bold", size: 23)
     static let boldSmallFont = UIFont(name: "YSDisplay-Bold", size: 18)
     static let mediumLargeFont = UIFont(name: "YSDisplay-Medium", size: 20)
