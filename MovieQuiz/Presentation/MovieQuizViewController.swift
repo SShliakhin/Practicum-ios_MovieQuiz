@@ -116,8 +116,10 @@ extension MovieQuizViewController {
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // запускаем задачу через 1 секунду
-            self.showNextQuestionOrResults()
+        [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [unowned self] in
+            showNextQuestionOrResults()
+            [noButton, yesButton].forEach { $0.isEnabled.toggle() }
         }
     }
     
