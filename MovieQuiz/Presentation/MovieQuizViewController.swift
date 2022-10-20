@@ -1,5 +1,28 @@
 import UIKit
 
+// MARK: - Data model
+// вопрос
+private struct QuizQuestion {
+    let image: String
+    let text: String
+    let correctAnswer: Bool
+}
+
+// MARK: - ViewModels
+// для состояния "Вопрос задан"
+private struct QuizStepViewModel {
+    let image: UIImage
+    let question: String
+    let questionNumber: String
+}
+
+// для состояния "Результат квиза"
+private struct QuizResultsViewModel {
+    let title: String
+    let text: String
+    let buttonText: String
+}
+
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()
@@ -26,28 +49,6 @@ final class MovieQuizViewController: UIViewController {
     }
     private var questions: [QuizQuestion] = []
     private var correctAnswers = 0
-    
-    // MARK: - ViewModels
-    // для состояния "Вопрос задан"
-    private struct QuizStepViewModel {
-        let image: UIImage
-        let question: String
-        let questionNumber: String
-    }
-    
-    // для состояния "Результат квиза"
-    private struct QuizResultsViewModel {
-        let title: String
-        let text: String
-        let buttonText: String
-    }
-    
-    // вопрос
-    private struct QuizQuestion {
-        let image: String
-        let text: String
-        let correctAnswer: Bool
-    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -165,30 +166,6 @@ extension MovieQuizViewController {
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
     }
-    
-    private func applyStyleLabel(
-        for label: UILabel,
-        text: String,
-        font: UIFont? = Theme.mediumLargeFont,
-        textColor: UIColor = .ypWhite,
-        textAlignment: NSTextAlignment = .left,
-        numberOfLines: Int = 1
-    ) {
-        label.text = text
-        label.font = font
-        label.textColor = textColor
-        label.textAlignment = textAlignment
-        label.numberOfLines = numberOfLines
-    }
-    
-    private func applyStyleAnswerButton(for button: UIButton, title: String) {
-        button.setTitle(title, for: .normal)
-        button.titleLabel?.font = Theme.mediumLargeFont
-        button.setTitleColor(.ypBlack, for: .normal)
-        button.backgroundColor = .ypWhite
-        button.layer.cornerRadius = Theme.buttonCornerRadius
-        button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
-    }
 
     private func applyLayout() {
         arrangeStackView(
@@ -241,6 +218,36 @@ extension MovieQuizViewController {
         ])
     }
     
+    // MARK: - Supporting methods
+    private func applyStyleLabel(
+        for label: UILabel,
+        text: String,
+        font: UIFont? = Theme.mediumLargeFont,
+        textColor: UIColor = .ypWhite,
+        textAlignment: NSTextAlignment = .left,
+        numberOfLines: Int = 1
+    ) {
+        label.text = text
+        label.font = font
+        label.textColor = textColor
+        label.textAlignment = textAlignment
+        label.numberOfLines = numberOfLines
+    }
+    
+    private func applyStyleAnswerButton(for button: UIButton, title: String) {
+        button.setTitle(title, for: .normal)
+        button.titleLabel?.font = Theme.mediumLargeFont
+        button.setTitleColor(.ypBlack, for: .normal)
+        button.backgroundColor = .ypWhite
+        button.layer.cornerRadius = Theme.buttonCornerRadius
+        button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
+    }
+    
+    private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
+        previewImageView.layer.borderWidth = width
+        previewImageView.layer.borderColor = color
+    }
+    
     private func arrangeStackView(
         for stackView: UIStackView,
         subviews: [UIView],
@@ -259,11 +266,6 @@ extension MovieQuizViewController {
             stackView.addArrangedSubview(item)
         }
     }
-    
-    private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
-        previewImageView.layer.borderWidth = width
-        previewImageView.layer.borderColor = color
-    }
 }
 
 // MARK: - Actions
@@ -280,8 +282,6 @@ extension MovieQuizViewController {
 }
 
 // MARK: - Theme
-// ищу более корректное оформление констант - отдельный файл(-ы), типы: структура, перечисление или класс, пока в одном классе, хелп!
-// ищу более корректное наименования для констан, пока так, хелп!
 enum Theme {
     static let boldLargeFont = UIFont(name: "YSDisplay-Bold", size: 23)
     static let boldSmallFont = UIFont(name: "YSDisplay-Bold", size: 18)
