@@ -7,7 +7,8 @@ final class MovieQuizViewController: UIViewController {
     private let questionTitleStackView = UIStackView()
     private let questionTitleLabel = UILabel()
     private let questionIndexLabel = UILabel()
-        
+    
+    private let previewImageViewContainer = UIView()
     private let previewImageView = UIImageView()
     
     private let questionLabelView = UIView()
@@ -151,6 +152,7 @@ extension MovieQuizViewController {
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
         
+        previewImageViewContainer.backgroundColor = .ypBlack
         questionLabelView.backgroundColor = .ypBlack
         
         applyStyleLabel(
@@ -195,8 +197,13 @@ extension MovieQuizViewController {
         
         questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
+        previewImageView.translatesAutoresizingMaskIntoConstraints = false
+        previewImageViewContainer.addSubview(previewImageView)
+        
         questionLabel.translatesAutoresizingMaskIntoConstraints = false
         questionLabelView.addSubview(questionLabel)
+        
+        questionLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         
         arrangeStackView(
             for: buttonsStackView,
@@ -206,7 +213,7 @@ extension MovieQuizViewController {
         
         arrangeStackView(
             for: mainStackView,
-               subviews: [questionTitleStackView, previewImageView, questionLabelView, buttonsStackView],
+               subviews: [questionTitleStackView, previewImageViewContainer, questionLabelView, buttonsStackView],
                spacing: Theme.spacing,
                axis: .vertical)
         
@@ -219,6 +226,9 @@ extension MovieQuizViewController {
             mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Theme.topOffset),
             mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
+            previewImageView.centerXAnchor.constraint(equalTo: previewImageViewContainer.centerXAnchor),
+            previewImageView.centerYAnchor.constraint(equalTo: previewImageViewContainer.centerYAnchor),
+            previewImageView.topAnchor.constraint(equalTo: previewImageViewContainer.topAnchor),
             previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: Theme.imageHeightAspect),
             
             questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: Theme.leftQuestionPadding),
