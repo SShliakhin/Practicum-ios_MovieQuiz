@@ -143,7 +143,7 @@ extension MovieQuizViewController {
     }
 
     private func applyStyle() {
-        view.backgroundColor = .ypBlack // не уверен, так как есть .ypBackground, но он не соответствует макетам
+        view.backgroundColor = .ypBlack
         
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
         applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
@@ -209,12 +209,11 @@ extension MovieQuizViewController {
             previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: Theme.imageHeightAspect),
             
             questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: Theme.leftQuestionPadding),
-            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -Theme.leftQuestionPadding), // покзать, что слева такой же отступ
+            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -Theme.leftQuestionPadding),
             questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: Theme.topQuestionPadding),
-            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding), // показать, что сверху такой же отступ
+            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding),
             
-            noButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // может достаточно одного ограничения, чтобы задать высоту для стека?
-            yesButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // или лучше пусть будет у каждой кнопки?
+            buttonsStackView.heightAnchor.constraint(equalToConstant: Theme.buttonHeight),
         ])
     }
     
