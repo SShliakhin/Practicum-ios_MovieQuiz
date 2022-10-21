@@ -1,5 +1,28 @@
 import UIKit
 
+// MARK: - Data model
+// вопрос
+private struct QuizQuestion {
+    let image: String
+    let text: String
+    let correctAnswer: Bool
+}
+
+// MARK: - ViewModels
+// для состояния "Вопрос задан"
+private struct QuizStepViewModel {
+    let image: UIImage
+    let question: String
+    let questionNumber: String
+}
+
+// для состояния "Результат квиза"
+private struct QuizResultsViewModel {
+    let title: String
+    let text: String
+    let buttonText: String
+}
+
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()
@@ -7,7 +30,10 @@ final class MovieQuizViewController: UIViewController {
     private let questionTitleStackView = UIStackView()
     private let questionTitleLabel = UILabel()
     private let questionIndexLabel = UILabel()
-        
+    
+    private let previewImageViewStackView = UIStackView()
+    private let leftPaddingView = UIView()
+    private let rightPaddingView = UIView()
     private let previewImageView = UIImageView()
     
     private let questionLabelView = UIView()
@@ -25,28 +51,6 @@ final class MovieQuizViewController: UIViewController {
     }
     private var questions: [QuizQuestion] = []
     private var correctAnswers = 0
-    
-    // MARK: - ViewModels
-    // для состояния "Вопрос задан"
-    private struct QuizStepViewModel {
-        let image: UIImage
-        let question: String
-        let questionNumber: String
-    }
-    
-    // для состояния "Результат квиза"
-    private struct QuizResultsViewModel {
-        let title: String
-        let text: String
-        let buttonText: String
-    }
-    
-    // вопрос
-    private struct QuizQuestion {
-        let image: String
-        let text: String
-        let correctAnswer: Bool
-    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -141,7 +145,7 @@ extension MovieQuizViewController {
     }
 
     private func applyStyle() {
-        view.backgroundColor = .ypBlack // не уверен, так как есть .ypBackground, но он не соответствует макетам
+        view.backgroundColor = .ypBlack
         
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
         applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
@@ -163,7 +167,57 @@ extension MovieQuizViewController {
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
     }
+
+    private func applyLayout() {
+        arrangeStackView(
+            for: questionTitleStackView,
+               subviews: [questionTitleLabel, questionIndexLabel])
+        
+        questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        
+        arrangeStackView(
+            for: previewImageViewStackView,
+               subviews: [leftPaddingView, previewImageView, rightPaddingView])
+        
+        questionLabel.translatesAutoresizingMaskIntoConstraints = false
+        questionLabelView.addSubview(questionLabel)
+        
+        questionLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        
+        arrangeStackView(
+            for: buttonsStackView,
+               subviews: [noButton, yesButton],
+               spacing: Theme.spacing,
+               distribution: .fillEqually)
+        
+        arrangeStackView(
+            for: mainStackView,
+               subviews: [questionTitleStackView, previewImageViewStackView, questionLabelView, buttonsStackView],
+               spacing: Theme.spacing,
+               axis: .vertical)
+        
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mainStackView)
+        
+        NSLayoutConstraint.activate([
+            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Theme.leftOffset),
+            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Theme.leftOffset),
+            mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Theme.topOffset),
+            mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: Theme.imageHeightAspect),
+            leftPaddingView.widthAnchor.constraint(equalTo: rightPaddingView.widthAnchor),
+            
+            questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: Theme.leftQuestionPadding),
+            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -Theme.leftQuestionPadding),
+            questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: Theme.topQuestionPadding),
+            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding),
+            
+            buttonsStackView.heightAnchor.constraint(equalToConstant: Theme.buttonHeight),
+        ])
+    }
     
+    // MARK: - Supporting methods
     private func applyStyleLabel(
         for label: UILabel,
         text: String,
@@ -187,48 +241,10 @@ extension MovieQuizViewController {
         button.layer.cornerRadius = Theme.buttonCornerRadius
         button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
     }
-
-    private func applyLayout() {
-        arrangeStackView(
-            for: questionTitleStackView,
-               subviews: [questionTitleLabel, questionIndexLabel])
-        
-        questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        
-        questionLabel.translatesAutoresizingMaskIntoConstraints = false
-        questionLabelView.addSubview(questionLabel)
-        
-        arrangeStackView(
-            for: buttonsStackView,
-               subviews: [noButton, yesButton],
-               spacing: Theme.spacing,
-               distribution: .fillEqually)
-        
-        arrangeStackView(
-            for: mainStackView,
-               subviews: [questionTitleStackView, previewImageView, questionLabelView, buttonsStackView],
-               spacing: Theme.spacing,
-               axis: .vertical)
-        
-        mainStackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(mainStackView)
-        
-        NSLayoutConstraint.activate([
-            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Theme.leftOffset),
-            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Theme.leftOffset),
-            mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Theme.topOffset),
-            mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
-            previewImageView.heightAnchor.constraint(equalTo: previewImageView.widthAnchor, multiplier: Theme.imageHeightAspect),
-            
-            questionLabel.leadingAnchor.constraint(equalTo: questionLabelView.leadingAnchor, constant: Theme.leftQuestionPadding),
-            questionLabel.trailingAnchor.constraint(equalTo: questionLabelView.trailingAnchor, constant: -Theme.leftQuestionPadding), // покзать, что слева такой же отступ
-            questionLabel.topAnchor.constraint(equalTo: questionLabelView.topAnchor, constant: Theme.topQuestionPadding),
-            questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding), // показать, что сверху такой же отступ
-            
-            noButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // может достаточно одного ограничения, чтобы задать высоту для стека?
-            yesButton.heightAnchor.constraint(equalToConstant: Theme.buttonHeight), // или лучше пусть будет у каждой кнопки?
-        ])
+    
+    private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
+        previewImageView.layer.borderWidth = width
+        previewImageView.layer.borderColor = color
     }
     
     private func arrangeStackView(
@@ -249,11 +265,6 @@ extension MovieQuizViewController {
             stackView.addArrangedSubview(item)
         }
     }
-    
-    private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
-        previewImageView.layer.borderWidth = width
-        previewImageView.layer.borderColor = color
-    }
 }
 
 // MARK: - Actions
@@ -270,8 +281,6 @@ extension MovieQuizViewController {
 }
 
 // MARK: - Theme
-// ищу более корректное оформление констант - отдельный файл(-ы), типы: структура, перечисление или класс, пока в одном классе, хелп!
-// ищу более корректное наименования для констан, пока так, хелп!
 enum Theme {
     static let boldLargeFont = UIFont(name: "YSDisplay-Bold", size: 23)
     static let boldSmallFont = UIFont(name: "YSDisplay-Bold", size: 18)
