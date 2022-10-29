@@ -91,7 +91,8 @@ extension MovieQuizViewController {
             message: result.text,
             preferredStyle: .alert)
         
-        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+            guard let self = self else { return }
             self.startQuiz()
         }
         
@@ -121,6 +122,7 @@ extension MovieQuizViewController {
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        // у нас здесь один ссылочный объект, значит и цикла удержания не может быть
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [unowned self] in
             showNextQuestionOrResults()
             [noButton, yesButton].forEach { $0.isEnabled.toggle() }
