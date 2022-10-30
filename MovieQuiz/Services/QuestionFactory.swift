@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class QuestionFactory {
+final class QuestionFactory: QuestionFactoryProtocol {
     private var questions: [QuizQuestion] = []
     
     init() {
