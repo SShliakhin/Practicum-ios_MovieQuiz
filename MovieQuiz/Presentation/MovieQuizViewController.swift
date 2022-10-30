@@ -1,13 +1,5 @@
 import UIKit
 
-// MARK: - Data model
-// вопрос
-private struct QuizQuestion {
-    let image: String
-    let text: String
-    let correctAnswer: Bool
-}
-
 // MARK: - ViewModels
 // для состояния "Вопрос задан"
 private struct QuizStepViewModel {
@@ -49,8 +41,12 @@ final class MovieQuizViewController: UIViewController {
             showCurrentQuestion()
         }
     }
-    private var questions: [QuizQuestion] = []
+    
     private var correctAnswers = 0
+    
+    private let questionsAmount: Int = 10
+    private let questionFactory: QuestionFactory = QuestionFactory()
+    private var currentQuestion: QuizQuestion?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -66,15 +62,16 @@ final class MovieQuizViewController: UIViewController {
 // MARK: - State's methods
 extension MovieQuizViewController {
     private func startQuiz() {
-        questions.shuffle()
         currentQuestionIndex = 0
         correctAnswers = 0
     }
     
     private func showCurrentQuestion() {
-        let currentQuestion = questions[currentQuestionIndex]
-        let quiz = convert(model: currentQuestion)
-        show(quiz: quiz)
+        if let newQuestion = questionFactory.requestNextQuestion() {
+            currentQuestion = newQuestion
+            let quiz = convert(model: newQuestion)
+            show(quiz: quiz)
+        }
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -102,8 +99,8 @@ extension MovieQuizViewController {
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questions.count - 1 {
-            let text = "Ваш результат: \(correctAnswers) из \(questions.count)"
+        if currentQuestionIndex == questionsAmount - 1 {
+            let text = "Ваш результат: \(correctAnswers) из \(questionsAmount)"
             let result = QuizResultsViewModel(
                 title: "Раунд окончен!",
                 text: text,
@@ -133,15 +130,13 @@ extension MovieQuizViewController {
         QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
 }
 
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        questions = loadMockData()
-        
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
     }
@@ -272,12 +267,12 @@ extension MovieQuizViewController {
 // MARK: - Actions
 extension MovieQuizViewController {
     @objc func yesButtonTapped() {
-        let currentQuestion = questions[currentQuestionIndex]
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
     }
     
     @objc func noButtonTapped() {
-        let currentQuestion = questions[currentQuestionIndex]
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
     }
 }
@@ -301,52 +296,4 @@ enum Theme {
     static let topOffset: CGFloat = 10
     static let leftQuestionPadding: CGFloat = 42
     static let topQuestionPadding: CGFloat = 13
-}
-
-// MARK: - Mock data
-extension MovieQuizViewController {
-    private func loadMockData() -> [QuizQuestion]{
-        [
-            QuizQuestion(
-                image: "The Godfather",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Dark Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Kill Bill",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Avengers",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Deadpool",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Green Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Old",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "The Ice Age Adventures of Buck Wild",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Tesla",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Vivarium",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false)
-        ]
-    }
 }
