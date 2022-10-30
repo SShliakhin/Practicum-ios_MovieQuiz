@@ -1,20 +1,5 @@
 import UIKit
 
-// MARK: - ViewModels
-// для состояния "Вопрос задан"
-private struct QuizStepViewModel {
-    let image: UIImage
-    let question: String
-    let questionNumber: String
-}
-
-// для состояния "Результат квиза"
-private struct QuizResultsViewModel {
-    let title: String
-    let text: String
-    let buttonText: String
-}
-
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()

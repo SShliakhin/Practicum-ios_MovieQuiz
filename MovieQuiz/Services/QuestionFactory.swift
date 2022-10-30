@@ -7,14 +7,6 @@
 
 import Foundation
 
-// MARK: - Data model
-// вопрос
-struct QuizQuestion {
-    let image: String
-    let text: String
-    let correctAnswer: Bool
-}
-
 final class QuestionFactory {
     private var questions: [QuizQuestion] = []
     
