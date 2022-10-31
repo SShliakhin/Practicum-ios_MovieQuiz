@@ -10,15 +10,20 @@ import Foundation
 final class QuestionFactory: QuestionFactoryProtocol {
     private var questions: [QuizQuestion] = []
     
-    init() {
+    weak var delegate: QuestionFactoryDelegate?
+    
+    init(delegate: QuestionFactoryDelegate?) {
+        self.delegate = delegate
         questions = loadMockData()
     }
     
-    func requestNextQuestion() -> QuizQuestion? {
+    func requestNextQuestion() {
         guard let index = (0..<questions.count).randomElement() else {
-            return nil
+            delegate?.didRecieveNextQuestion(self, question: nil)
+            return
         }
-        return questions[safe: index]
+        let question = questions[safe: index]
+        delegate?.didRecieveNextQuestion(self, question: question)
     }
 }
 

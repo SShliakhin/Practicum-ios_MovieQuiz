@@ -23,14 +23,14 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            showCurrentQuestion()
+            questionFactory?.requestNextQuestion()
         }
     }
     
     private var correctAnswers = 0
     
     private let questionsAmount: Int = 10
-    private let questionFactory: QuestionFactoryProtocol = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
     // MARK: - Lifecycle
@@ -50,15 +50,7 @@ extension MovieQuizViewController {
         currentQuestionIndex = 0
         correctAnswers = 0
     }
-    
-    private func showCurrentQuestion() {
-        if let newQuestion = questionFactory.requestNextQuestion() {
-            currentQuestion = newQuestion
-            let quiz = convert(model: newQuestion)
-            show(quiz: quiz)
-        }
-    }
-    
+
     private func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.text = step.questionNumber
         previewImageView.image = step.image
@@ -122,6 +114,8 @@ extension MovieQuizViewController {
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
+        questionFactory = QuestionFactory(delegate: self)
+        
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
     }
@@ -259,5 +253,20 @@ extension MovieQuizViewController {
     @objc func noButtonTapped() {
         guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
+    }
+}
+
+// MARK: - QuestionFactoryDelegate
+extension MovieQuizViewController: QuestionFactoryDelegate {
+    func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+
+        currentQuestion = question
+        let quiz = convert(model: question)
+        DispatchQueue.main.async { [unowned self] in
+            show(quiz: quiz)
+        }
     }
 }
