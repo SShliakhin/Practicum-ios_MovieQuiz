@@ -66,8 +66,7 @@ extension MovieQuizViewController {
             preferredStyle: .alert)
         
         let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            self.startQuiz()
+            self?.startQuiz()
         }
         
         alert.addAction(action)
@@ -96,10 +95,10 @@ extension MovieQuizViewController {
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         [noButton, yesButton].forEach { $0.isEnabled.toggle() }
-        // у нас здесь один ссылочный объект, значит и цикла удержания не может быть
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [unowned self] in
-            showNextQuestionOrResults()
-            [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.showNextQuestionOrResults()
+            [strongSelf.noButton, strongSelf.yesButton].forEach { $0.isEnabled.toggle() }
         }
     }
     
@@ -265,8 +264,9 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
 
         currentQuestion = question
         let quiz = convert(model: question)
-        DispatchQueue.main.async { [unowned self] in
-            show(quiz: quiz)
+        // TODO: - лучше оборачивать в сервисе
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: quiz)
         }
     }
 }
