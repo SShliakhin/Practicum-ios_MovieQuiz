@@ -60,18 +60,9 @@ extension MovieQuizViewController {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+        AlertPresenter.displayResult(result, over: self) { [weak self] in
             self?.startQuiz()
         }
-        
-        alert.addAction(action)
-        
-        present(alert, animated: true, completion: nil)
     }
     
     private func showNextQuestionOrResults() {

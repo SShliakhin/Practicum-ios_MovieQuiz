@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A9D10822919DDDF002F9C17 /* AlertPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9D10812919DDDF002F9C17 /* AlertPresenter.swift */; };
 		5AE3ACEB290EB31200E235E7 /* QuestionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE3ACEA290EB31200E235E7 /* QuestionFactory.swift */; };
 		5AE3ACEE290ED9FC00E235E7 /* QuizQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE3ACED290ED9FC00E235E7 /* QuizQuestion.swift */; };
 		5AE3ACF0290EDA5600E235E7 /* QuizStepViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE3ACEF290EDA5600E235E7 /* QuizStepViewModel.swift */; };
@@ -30,6 +31,7 @@
 /* Begin PBXFileReference section */
 		5A66E26F28F8DA7500899D16 /* YS Display-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YS Display-Medium.ttf"; sourceTree = "<group>"; };
 		5A66E27028F8DA7500899D16 /* YS Display-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YS Display-Bold.ttf"; sourceTree = "<group>"; };
+		5A9D10812919DDDF002F9C17 /* AlertPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPresenter.swift; sourceTree = "<group>"; };
 		5AE3ACEA290EB31200E235E7 /* QuestionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionFactory.swift; sourceTree = "<group>"; };
 		5AE3ACED290ED9FC00E235E7 /* QuizQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizQuestion.swift; sourceTree = "<group>"; };
 		5AE3ACEF290EDA5600E235E7 /* QuizStepViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizStepViewModel.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				AD1ABAB52831907B00B3E448 /* MovieQuizViewController.swift */,
+				5A9D10812919DDDF002F9C17 /* AlertPresenter.swift */,
 				AD1ABAB72831907B00B3E448 /* Main.storyboard */,
 			);
 			path = Presentation;
@@ -259,6 +262,7 @@
 				AD7AFA552836189F00399704 /* Array+Extensions.swift in Sources */,
 				5AE3ACF2290EDAD500E235E7 /* QuizResultsViewModel.swift in Sources */,
 				5AE3ACF0290EDA5600E235E7 /* QuizStepViewModel.swift in Sources */,
+				5A9D10822919DDDF002F9C17 /* AlertPresenter.swift in Sources */,
 				5AE3ACF9290F45CD00E235E7 /* QuestionFactoryDelegate.swift in Sources */,
 				5AE3ACF5290EDC2C00E235E7 /* Theme.swift in Sources */,
 				AD1ABAB62831907B00B3E448 /* MovieQuizViewController.swift in Sources */,
