@@ -33,6 +33,8 @@ final class MovieQuizViewController: UIViewController {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
+    private var alertPresenter: AlertPresenterProtocol?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,9 +62,15 @@ extension MovieQuizViewController {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        AlertPresenter.displayResult(result, over: self) { [weak self] in
+        let alertModel = AlertModel(
+            title: result.title,
+            message: result.text,
+            buttonText: result.buttonText
+        ) { [weak self] in
             self?.startQuiz()
         }
+        
+        alertPresenter?.displayResult(alertModel, over: self)
     }
     
     private func showNextQuestionOrResults() {
@@ -105,6 +113,7 @@ extension MovieQuizViewController {
 extension MovieQuizViewController {
     private func setup() {
         questionFactory = QuestionFactory(delegate: self)
+        alertPresenter = AlertPresenter()
         
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
