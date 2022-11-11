@@ -76,15 +76,15 @@ extension MovieQuizViewController {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1,
-           let statictica = statisticService {
-            statictica.store(correct: correctAnswers, total: questionsAmount)
+           let statistics = statisticService {
+            statistics.store(correct: correctAnswers, total: questionsAmount)
             
-            let bestGame = statictica.bestGame
+            let bestGame = statistics.bestGame
             let text = """
                 Ваш результат: \(correctAnswers)/\(questionsAmount)
-                Количество сыгранных квизов: \(statictica.gamesCount)
+                Количество сыгранных квизов: \(statistics.gamesCount)
                 Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
-                Средняя точность: \(String(format: "%.2f", statictica.totalAccuracy))%
+                Средняя точность: \(String(format: "%.2f", statistics.totalAccuracy))%
                 """
             let result = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
