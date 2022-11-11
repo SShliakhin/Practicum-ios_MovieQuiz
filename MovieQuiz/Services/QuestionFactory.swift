@@ -23,7 +23,23 @@ final class QuestionFactory: QuestionFactoryProtocol {
             return
         }
         let question = questions[safe: index]
+        if question != nil {
+            deleteIndexQuestionOrReloadQuestions(index)
+        }
         delegate?.didRecieveNextQuestion(self, question: question)
+    }
+    
+    private func deleteIndexQuestionOrReloadQuestions(_ index: Int) {
+        guard questions.count != 1 else {
+            questions = loadMockData()
+            return
+        }
+        
+        let lastIndex = questions.count - 1
+        if index != lastIndex {
+            questions.swapAt(index, lastIndex)
+        }
+        questions.removeLast()
     }
 }
 
