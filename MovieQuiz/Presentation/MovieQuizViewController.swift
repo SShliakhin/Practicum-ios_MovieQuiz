@@ -34,6 +34,7 @@ final class MovieQuizViewController: UIViewController {
     private var currentQuestion: QuizQuestion?
     
     private var alertPresenter: AlertPresenterProtocol?
+    private var statisticService: StatisticService?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -74,10 +75,19 @@ extension MovieQuizViewController {
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1 {
-            let text = "Ваш результат: \(correctAnswers) из \(questionsAmount)"
+        if currentQuestionIndex == questionsAmount - 1,
+           let statictica = statisticService {
+            statictica.store(correct: correctAnswers, total: questionsAmount)
+            
+            let bestGame = statictica.bestGame
+            let text = """
+                Ваш результат: \(correctAnswers)/\(questionsAmount)
+                Количество сыгранных квизов: \(statictica.gamesCount)
+                Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
+                Средняя точность: \(String(format: "%.2f", statictica.totalAccuracy))%
+                """
             let result = QuizResultsViewModel(
-                title: "Раунд окончен!",
+                title: "Этот раунд окончен!",
                 text: text,
                 buttonText: "Сыграть ещё раз")
             show(quiz: result)
@@ -114,6 +124,7 @@ extension MovieQuizViewController {
     private func setup() {
         questionFactory = QuestionFactory(delegate: self)
         alertPresenter = AlertPresenter()
+        statisticService = StatisticServiceImplementation()
         
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
