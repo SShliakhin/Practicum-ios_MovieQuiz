@@ -1,28 +1,5 @@
 import UIKit
 
-// MARK: - Data model
-// вопрос
-private struct QuizQuestion {
-    let image: String
-    let text: String
-    let correctAnswer: Bool
-}
-
-// MARK: - ViewModels
-// для состояния "Вопрос задан"
-private struct QuizStepViewModel {
-    let image: UIImage
-    let question: String
-    let questionNumber: String
-}
-
-// для состояния "Результат квиза"
-private struct QuizResultsViewModel {
-    let title: String
-    let text: String
-    let buttonText: String
-}
-
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()
@@ -46,11 +23,18 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            showCurrentQuestion()
+            questionFactory?.requestNextQuestion()
         }
     }
-    private var questions: [QuizQuestion] = []
+    
     private var correctAnswers = 0
+    
+    private let questionsAmount: Int = 10
+    private var questionFactory: QuestionFactoryProtocol?
+    private var currentQuestion: QuizQuestion?
+    
+    private var alertPresenter: AlertPresenterProtocol?
+    private var statisticService: StatisticService?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -66,17 +50,10 @@ final class MovieQuizViewController: UIViewController {
 // MARK: - State's methods
 extension MovieQuizViewController {
     private func startQuiz() {
-        questions.shuffle()
         currentQuestionIndex = 0
         correctAnswers = 0
     }
-    
-    private func showCurrentQuestion() {
-        let currentQuestion = questions[currentQuestionIndex]
-        let quiz = convert(model: currentQuestion)
-        show(quiz: quiz)
-    }
-    
+
     private func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.text = step.questionNumber
         previewImageView.image = step.image
@@ -86,25 +63,31 @@ extension MovieQuizViewController {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
+        let alertModel = AlertModel(
             title: result.title,
             message: result.text,
-            preferredStyle: .alert)
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
-            self.startQuiz()
+            buttonText: result.buttonText
+        ) { [weak self] in
+            self?.startQuiz()
         }
         
-        alert.addAction(action)
-        
-        present(alert, animated: true, completion: nil)
+        alertPresenter?.displayResult(alertModel, over: self)
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questions.count - 1 {
-            let text = "Ваш результат: \(correctAnswers) из \(questions.count)"
+        if currentQuestionIndex == questionsAmount - 1,
+           let statistics = statisticService {
+            statistics.store(correct: correctAnswers, total: questionsAmount)
+            
+            let bestGame = statistics.bestGame
+            let text = """
+                Ваш результат: \(correctAnswers)/\(questionsAmount)
+                Количество сыгранных квизов: \(statistics.gamesCount)
+                Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
+                Средняя точность: \(String(format: "%.2f", statistics.totalAccuracy))%
+                """
             let result = QuizResultsViewModel(
-                title: "Раунд окончен!",
+                title: "Этот раунд окончен!",
                 text: text,
                 buttonText: "Сыграть ещё раз")
             show(quiz: result)
@@ -121,9 +104,10 @@ extension MovieQuizViewController {
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         [noButton, yesButton].forEach { $0.isEnabled.toggle() }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [unowned self] in
-            showNextQuestionOrResults()
-            [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.showNextQuestionOrResults()
+            [strongSelf.noButton, strongSelf.yesButton].forEach { $0.isEnabled.toggle() }
         }
     }
     
@@ -131,14 +115,16 @@ extension MovieQuizViewController {
         QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
 }
 
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        questions = loadMockData()
+        questionFactory = QuestionFactory(delegate: self)
+        alertPresenter = AlertPresenter()
+        statisticService = StatisticServiceImplementation()
         
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
@@ -270,81 +256,28 @@ extension MovieQuizViewController {
 // MARK: - Actions
 extension MovieQuizViewController {
     @objc func yesButtonTapped() {
-        let currentQuestion = questions[currentQuestionIndex]
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
     }
     
     @objc func noButtonTapped() {
-        let currentQuestion = questions[currentQuestionIndex]
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
     }
 }
 
-// MARK: - Theme
-enum Theme {
-    static let boldLargeFont = UIFont(name: "YSDisplay-Bold", size: 23)
-    static let boldSmallFont = UIFont(name: "YSDisplay-Bold", size: 18)
-    static let mediumLargeFont = UIFont(name: "YSDisplay-Medium", size: 20)
-    static let mediumSmallFont = UIFont(name: "YSDisplay-Medium", size: 16)
-    
-    static let buttonCornerRadius: CGFloat = 15
-    static let buttonHeight: CGFloat = 60
-    
-    static let imageCornerRadius: CGFloat = 20
-    static let imageAnswerBorderWidht: CGFloat = 8
-    static let imageHeightAspect: CGFloat = 3/2
-    
-    static let spacing: CGFloat = 20
-    static let leftOffset: CGFloat = 20
-    static let topOffset: CGFloat = 10
-    static let leftQuestionPadding: CGFloat = 42
-    static let topQuestionPadding: CGFloat = 13
-}
+// MARK: - QuestionFactoryDelegate
+extension MovieQuizViewController: QuestionFactoryDelegate {
+    func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
 
-// MARK: - Mock data
-extension MovieQuizViewController {
-    private func loadMockData() -> [QuizQuestion]{
-        [
-            QuizQuestion(
-                image: "The Godfather",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Dark Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Kill Bill",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Avengers",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Deadpool",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Green Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Old",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "The Ice Age Adventures of Buck Wild",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Tesla",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Vivarium",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false)
-        ]
+        currentQuestion = question
+        let quiz = convert(model: question)
+        // TODO: - лучше оборачивать в сервисе
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: quiz)
+        }
     }
 }
