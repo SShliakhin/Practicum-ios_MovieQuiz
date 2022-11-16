@@ -9,10 +9,13 @@ import Foundation
 
 final class QuestionFactory: QuestionFactoryProtocol {
     private var questions: [QuizQuestion] = []
+    private let moviesLoader: MoviesLoading
+    private var movies: [MostPopularMovie] = []
     
     weak var delegate: QuestionFactoryDelegate?
     
-    init() {
+    init(moviesLoader: MoviesLoading) {
+        self.moviesLoader = moviesLoader
         questions = loadMockData()
     }
     
@@ -26,6 +29,19 @@ final class QuestionFactory: QuestionFactoryProtocol {
             deleteIndexQuestionOrReloadQuestions(index)
         }
         delegate?.didRecieveNextQuestion(self, question: question)
+    }
+    
+    func loadData() {
+        moviesLoader.loadMovies { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let mostPopularMovies):
+                self.movies = mostPopularMovies.items
+                self.delegate?.didLoadDataFromServer()
+            case .failure(let error):
+                self.delegate?.didFailToLoadData(with: error)
+            }
+        }
     }
     
     private func deleteIndexQuestionOrReloadQuestions(_ index: Int) {
