@@ -323,4 +323,13 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
             self?.show(quiz: quiz)
         }
     }
+    
+    func didLoadDataFromServer() {
+        hideLoadingIndicator()
+        currentQuestionIndex = 1
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
 }
