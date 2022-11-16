@@ -20,10 +20,17 @@ final class MovieQuizViewController: UIViewController {
     private let yesButton = UIButton()
     private let noButton = UIButton()
     
+    private let activityIndicator = UIActivityIndicatorView()
+    
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            questionFactory?.requestNextQuestion()
+            showLoadingIndicator()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.hideLoadingIndicator()
+                strongSelf.questionFactory?.requestNextQuestion()
+            }
         }
     }
     
@@ -117,6 +124,29 @@ extension MovieQuizViewController {
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        
+        let alert = AlertModel(
+            title: "Ошибка",
+            message: message,
+            buttonText: "Попробовать еще раз"
+        ) { [weak self] in
+            self?.startQuiz()
+        }
+        alertPresenter?.displayResult(alert, over: self)
+    }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
 }
 
 // MARK: - Private methods setup and UI
@@ -152,6 +182,8 @@ extension MovieQuizViewController {
         
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
+        
+        activityIndicator.isHidden = true
     }
 
     private func applyLayout() {
@@ -182,8 +214,10 @@ extension MovieQuizViewController {
                spacing: Theme.spacing,
                axis: .vertical)
         
-        mainStackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(mainStackView)
+        [mainStackView, activityIndicator].forEach { item in
+            item.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(item)
+        }
         
         NSLayoutConstraint.activate([
             mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Theme.leftOffset),
@@ -200,6 +234,9 @@ extension MovieQuizViewController {
             questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding),
             
             buttonsStackView.heightAnchor.constraint(equalToConstant: Theme.buttonHeight),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: previewImageView.centerYAnchor)
         ])
     }
     
@@ -269,10 +306,14 @@ extension MovieQuizViewController {
 // MARK: - QuestionFactoryDelegate
 extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
+        // TODO: - здесь уже должны быть на главном потоке
         guard let question = question else {
+            showNetworkError(message: "Сетевая ошибка")
             return
         }
 
+        hideLoadingIndicator()
+        
         currentQuestion = question
         let quiz = convert(model: question)
         // TODO: - лучше оборачивать в сервисе
