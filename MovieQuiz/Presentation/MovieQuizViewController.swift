@@ -152,7 +152,9 @@ extension MovieQuizViewController {
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        questionFactory = QuestionFactory(delegate: self)
+        questionFactory = QuestionFactory()
+        questionFactory?.delegate = self
+        
         alertPresenter = AlertPresenter()
         statisticService = StatisticServiceImplementation()
         

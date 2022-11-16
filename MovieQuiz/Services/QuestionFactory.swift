@@ -12,8 +12,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
     
     weak var delegate: QuestionFactoryDelegate?
     
-    init(delegate: QuestionFactoryDelegate?) {
-        self.delegate = delegate
+    init() {
         questions = loadMockData()
     }
     
