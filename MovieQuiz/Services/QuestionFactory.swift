@@ -62,9 +62,11 @@ final class QuestionFactory: QuestionFactoryProtocol {
     
     private func convert(model: MostPopularMovie) -> QuizQuestion {
         var imageData = Data()
+        var hint = ""
         do {
             imageData = try Data(contentsOf: model.resizedImageURL)
         } catch {
+            hint = "\(model.title) "
             print("Failed to load image")
         }
         
@@ -73,7 +75,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
         let addition = Float((0...15).randomElement() ?? 0) / 10
         let number = 8.0 + addition
         
-        let text = "Рейтинг этого фильма \(wordHowCompare) чем \(number)?"
+        let text = "\(hint)Рейтинг этого фильма \(wordHowCompare) чем \(number)?"
         let correctAnswer = wordHowCompare == "больше" ? rating > number : rating < number
         
         return QuizQuestion(image: imageData,
