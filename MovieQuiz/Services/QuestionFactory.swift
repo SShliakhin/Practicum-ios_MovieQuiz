@@ -26,7 +26,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
         
         DispatchQueue.global().async { [weak self] in
             guard let self = self else { return }
-            let index = (0..<self.movies.count).randomElement() ?? 0
+            let index = (0..<self.unusedQuestionCount).randomElement() ?? 0
             
             guard let movie = self.movies[safe: index] else { return }
             
