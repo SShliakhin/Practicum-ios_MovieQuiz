@@ -136,7 +136,6 @@ extension MovieQuizViewController {
     }
     
     private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
     }
     
@@ -186,6 +185,7 @@ extension MovieQuizViewController {
         applyStyleAnswerButton(for: noButton, title: "Нет")
         
         activityIndicator.isHidden = true
+        activityIndicator.style = .large
     }
 
     private func applyLayout() {
