@@ -74,7 +74,7 @@ extension MovieQuizViewController {
             self?.startQuiz()
         }
         
-        alertPresenter?.displayResult(alertModel, over: self)
+        alertPresenter?.displayAlert(alertModel, over: self)
     }
     
     private func showNextQuestionOrResults() {
@@ -122,14 +122,14 @@ extension MovieQuizViewController {
     }
     
     private func showNetworkError(message: String) {
-        let alert = AlertModel(
+        let alertModel = AlertModel(
             title: "Ошибка",
             message: message,
             buttonText: "Попробовать еще раз"
         ) { [weak self] in
             self?.startQuiz()
         }
-        alertPresenter?.displayResult(alert, over: self)
+        alertPresenter?.displayAlert(alertModel, over: self)
     }
     
     private func showLoadingIndicator() {
