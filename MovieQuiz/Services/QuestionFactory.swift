@@ -71,7 +71,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
         let rating = Float(model.rating) ?? 0
         let wordHowCompare = ["больше", "меньше"].randomElement() ?? "больше"
         let addition = Float((0...15).randomElement() ?? 0) / 10
-        let number = 7.0 + addition
+        let number = 8.0 + addition
         
         let text = "Рейтинг этого фильма \(wordHowCompare) чем \(number)?"
         let correctAnswer = wordHowCompare == "больше" ? rating > number : rating < number
