@@ -18,8 +18,8 @@ protocol StatisticService {
 final class StatisticServiceImplementation: StatisticService {
     
     private enum Keys: String {
-        case correct // всего корректных ответов
-        case total // всего вопросов
+        case correct
+        case total
         case bestGame
         case gamesCount
     }
