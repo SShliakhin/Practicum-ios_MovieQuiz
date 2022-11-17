@@ -60,7 +60,7 @@ extension MovieQuizViewController {
     private func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.text = step.questionNumber
         previewImageView.image = step.image
-        questionLabel.text = step.question
+        questionLabel.animationTyping(step.question, duration: 0.01)
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -142,7 +142,9 @@ extension MovieQuizViewController {
     
     private func prepareLoadQuestion() {
         showLoadingIndicator()
-        show(quiz: QuizStepViewModel(image: UIImage(), question: "", questionNumber: ""))
+        questionIndexLabel.text = ""
+        previewImageView.image = UIImage()
+        questionLabel.text = ""
         setPreviewImageViewBorder()
     }
 }
