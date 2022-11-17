@@ -26,11 +26,7 @@ final class MovieQuizViewController: UIViewController {
     private var currentQuestionIndex = 0 {
         didSet {
             showLoadingIndicator()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.hideLoadingIndicator()
-                strongSelf.questionFactory?.requestNextQuestion()
-            }
+            questionFactory?.requestNextQuestion()
         }
     }
     
@@ -120,14 +116,12 @@ extension MovieQuizViewController {
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
     private func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        
         let alert = AlertModel(
             title: "Ошибка",
             message: message,
@@ -308,28 +302,24 @@ extension MovieQuizViewController {
 // MARK: - QuestionFactoryDelegate
 extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
-        // TODO: - здесь уже должны быть на главном потоке
+        hideLoadingIndicator()
+        
         guard let question = question else {
-            showNetworkError(message: "Сетевая ошибка")
             return
         }
 
-        hideLoadingIndicator()
-        
         currentQuestion = question
         let quiz = convert(model: question)
-        // TODO: - лучше оборачивать в сервисе
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: quiz)
-        }
+        show(quiz: quiz)
     }
     
-    func didLoadDataFromServer() {
+    func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
         hideLoadingIndicator()
-        currentQuestionIndex = 1
+        currentQuestionIndex = 0
     }
     
-    func didFailToLoadData(with error: Error) {
+    func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
+        hideLoadingIndicator()
         showNetworkError(message: error.localizedDescription)
     }
 }
