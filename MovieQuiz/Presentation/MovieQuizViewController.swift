@@ -25,7 +25,7 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            showLoadingIndicator()
+            prepareLoadQuestion()
             questionFactory?.requestNextQuestion()
         }
     }
@@ -61,8 +61,6 @@ extension MovieQuizViewController {
         questionIndexLabel.text = step.questionNumber
         previewImageView.image = step.image
         questionLabel.text = step.question
-        
-        setPreviewImageViewBorder()
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -140,6 +138,12 @@ extension MovieQuizViewController {
     private func hideLoadingIndicator() {
         activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
+    }
+    
+    private func prepareLoadQuestion() {
+        showLoadingIndicator()
+        show(quiz: QuizStepViewModel(image: UIImage(), question: "", questionNumber: ""))
+        setPreviewImageViewBorder()
     }
 }
 
