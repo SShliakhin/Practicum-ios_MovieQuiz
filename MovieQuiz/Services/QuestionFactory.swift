@@ -45,6 +45,18 @@ final class QuestionFactory: QuestionFactoryProtocol {
             guard let self = self else { return }
             switch result {
             case .success(let mostPopularMovies):
+                var errorMessage = mostPopularMovies.errorMessage
+                if errorMessage.isEmpty, mostPopularMovies.items.isEmpty {
+                    errorMessage = "The data is not loaded!"
+                }
+                if !errorMessage.isEmpty {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        self.delegate?.didFailToLoadData(self, with: ServiceError.general(reason: errorMessage))
+                    }
+                    return
+                }
+                
                 self.movies = mostPopularMovies.items
                 self.unusedQuestionCount = self.movies.count
                 DispatchQueue.main.async { [weak self] in
@@ -67,7 +79,6 @@ final class QuestionFactory: QuestionFactoryProtocol {
             imageData = try Data(contentsOf: model.resizedImageURL)
         } catch {
             hint = "\(model.title) "
-            print("Failed to load image")
         }
         
         let rating = Float(model.rating) ?? 0

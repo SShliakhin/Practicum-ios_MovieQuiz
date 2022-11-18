@@ -119,7 +119,7 @@ extension MovieQuizViewController {
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
-    private func showNetworkError(message: String) {
+    private func showErrorAlert(message: String) {
         let alertModel = AlertModel(
             title: "Ошибка",
             message: message,
@@ -326,6 +326,20 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
     
     func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
         hideLoadingIndicator()
-        showNetworkError(message: error.localizedDescription)
+        var message = error.localizedDescription
+        guard let error = error as? ServiceError else {
+            showErrorAlert(message: message)
+            return
+        }
+        
+        switch error {
+        case .network(statusCode: let statusCode):
+            message = "Networking error. Status code: \(statusCode)."
+        case .parsing:
+            message = "JSON data could not be parsed."
+        case .general(reason: let reason):
+            message = reason
+        }
+        showErrorAlert(message: message)
     }
 }
