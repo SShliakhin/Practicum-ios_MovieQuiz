@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5A3AD60A29267441006B364B /* UILabel+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3AD60929267441006B364B /* UILabel+Extensions.swift */; };
+		5A3AD61029270BD4006B364B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3AD60F29270BD4006B364B /* APIKey.swift */; };
 		5A3C1074291C6DE000E6F8EE /* AlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3C1073291C6DE000E6F8EE /* AlertModel.swift */; };
 		5A3C1076291C6F8F00E6F8EE /* AlertPresenterProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3C1075291C6F8F00E6F8EE /* AlertPresenterProtocol.swift */; };
 		5A3C1078291CE6DB00E6F8EE /* StatisticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3C1077291CE6DB00E6F8EE /* StatisticService.swift */; };
@@ -38,6 +39,7 @@
 
 /* Begin PBXFileReference section */
 		5A3AD60929267441006B364B /* UILabel+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+Extensions.swift"; sourceTree = "<group>"; };
+		5A3AD60F29270BD4006B364B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 		5A3C1073291C6DE000E6F8EE /* AlertModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertModel.swift; sourceTree = "<group>"; };
 		5A3C1075291C6F8F00E6F8EE /* AlertPresenterProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPresenterProtocol.swift; sourceTree = "<group>"; };
 		5A3C1077291CE6DB00E6F8EE /* StatisticService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticService.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				5AE3ACF4290EDC2C00E235E7 /* Theme.swift */,
+				5A3AD60F29270BD4006B364B /* APIKey.swift */,
 				AD1ABAB12831907B00B3E448 /* AppDelegate.swift */,
 				AD1ABAB32831907B00B3E448 /* SceneDelegate.swift */,
 			);
@@ -284,6 +287,7 @@
 			files = (
 				5AE45C0A2924817F00E76013 /* NetworkClient.swift in Sources */,
 				AD5EE5DE284D7887003966EF /* UIColor+Extensions.swift in Sources */,
+				5A3AD61029270BD4006B364B /* APIKey.swift in Sources */,
 				5A3AD60A29267441006B364B /* UILabel+Extensions.swift in Sources */,
 				AD7AFA552836189F00399704 /* Array+Extensions.swift in Sources */,
 				5AE45C0C2924828A00E76013 /* MostPopularMovies.swift in Sources */,
