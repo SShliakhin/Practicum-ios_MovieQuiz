@@ -264,7 +264,7 @@ extension MovieQuizViewController {
         button.setTitleColor(.ypBlack, for: .normal)
         button.backgroundColor = .ypWhite
         button.layer.cornerRadius = Theme.buttonCornerRadius
-        button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
+        button.layer.masksToBounds = true
     }
     
     private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
