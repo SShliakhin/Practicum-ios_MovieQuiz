@@ -130,17 +130,8 @@ extension MovieQuizViewController {
         alertPresenter?.displayAlert(alertModel, over: self)
     }
     
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    
-    private func hideLoadingIndicator() {
-        activityIndicator.stopAnimating()
-    }
-    
     private func prepareLoadQuestion() {
-        showLoadingIndicator()
+        activityIndicator.startAnimating()
         questionIndexLabel.text = ""
         previewImageView.image = UIImage()
         questionLabel.text = ""
@@ -184,7 +175,6 @@ extension MovieQuizViewController {
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
         
-        activityIndicator.isHidden = true
         activityIndicator.style = .large
     }
 
@@ -308,8 +298,7 @@ extension MovieQuizViewController {
 // MARK: - QuestionFactoryDelegate
 extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
-        hideLoadingIndicator()
-        
+        activityIndicator.stopAnimating()
         guard let question = question else {
             return
         }
@@ -320,12 +309,12 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
     }
     
     func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
-        hideLoadingIndicator()
+        activityIndicator.stopAnimating()
         currentQuestionIndex = 0
     }
     
     func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
-        hideLoadingIndicator()
+        activityIndicator.stopAnimating()
         var message = error.localizedDescription
         guard let error = error as? ServiceError else {
             showErrorAlert(message: message)
