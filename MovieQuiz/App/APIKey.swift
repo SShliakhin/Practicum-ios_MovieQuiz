@@ -7,4 +7,6 @@
 
 import Foundation
 
-let apiKey = "k_nqxtwh99"
+enum Secrets {
+    static let apiKey = "k_nqxtwh99"
+}
