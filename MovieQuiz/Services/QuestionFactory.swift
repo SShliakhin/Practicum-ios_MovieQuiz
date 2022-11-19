@@ -45,15 +45,10 @@ final class QuestionFactory: QuestionFactoryProtocol {
             guard let self = self else { return }
             switch result {
             case .success(let mostPopularMovies):
-                var errorMessage = mostPopularMovies.errorMessage
-                if errorMessage.isEmpty, mostPopularMovies.items.isEmpty {
-                    errorMessage = "The data is not loaded!"
-                }
-                if !errorMessage.isEmpty {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        self.delegate?.didFailToLoadData(self, with: ServiceError.general(reason: errorMessage))
-                    }
+                guard !self.hasErrorMessage(
+                    mostPopularMovies.errorMessage,
+                    hasNoData: mostPopularMovies.items.isEmpty
+                ) else {
                     return
                 }
                 
@@ -70,6 +65,24 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 }
             }
         }
+    }
+    
+    private func hasErrorMessage(_ errorMessage: String?, hasNoData: Bool) -> Bool {
+        guard var errorMessage = errorMessage else {
+            return false
+        }
+
+        if errorMessage.isEmpty, hasNoData {
+            errorMessage = "The data is not loaded!"
+        }
+        if !errorMessage.isEmpty {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.didFailToLoadData(self, with: ServiceError.general(reason: errorMessage))
+            }
+            return true
+        }
+        return false
     }
     
     private func convert(model: MostPopularMovie) -> QuizQuestion {
