@@ -46,7 +46,6 @@ final class MovieQuizViewController: UIViewController {
         applyLayout()
         
         startQuiz()
-        preparePreviewImageView()
     }
 }
 
@@ -136,14 +135,9 @@ extension MovieQuizViewController {
         questionLabel.text = ""
         setPreviewImageViewBorder()
         previewImageView.flipOver()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.questionFactory?.requestNextQuestion()
         }
-    }
-    
-    private func preparePreviewImageView() {
-        guard let image = UIImage(named: "top250") else { return }
-        previewImageView.setFrontImage(image)
     }
 }
 
