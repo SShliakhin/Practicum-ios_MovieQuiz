@@ -11,7 +11,7 @@ final class MovieQuizViewController: UIViewController {
     private let previewImageViewStackView = UIStackView()
     private let leftPaddingView = UIView()
     private let rightPaddingView = UIView()
-    private let previewImageView = UIImageView()
+    private let previewImageView = PreviewImage()
     
     private let questionLabelView = UIView()
     private let questionLabel = UILabel()
@@ -26,7 +26,6 @@ final class MovieQuizViewController: UIViewController {
     private var currentQuestionIndex = 0 {
         didSet {
             prepareLoadQuestion()
-            questionFactory?.requestNextQuestion()
         }
     }
     
@@ -47,6 +46,7 @@ final class MovieQuizViewController: UIViewController {
         applyLayout()
         
         startQuiz()
+        preparePreviewImageView()
     }
 }
 
@@ -59,8 +59,10 @@ extension MovieQuizViewController {
 
     private func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.text = step.questionNumber
-        previewImageView.image = step.image
-        questionLabel.animationTyping(step.question, duration: 0.01)
+        previewImageView.setBackImage(step.image)
+        previewImageView.flipOver()
+        questionLabel.animationTyping(step.question, duration: 0.05)
+        [noButton, yesButton].forEach { $0.isEnabled = true }
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -104,11 +106,9 @@ extension MovieQuizViewController {
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
-        [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        [noButton, yesButton].forEach { $0.isEnabled = false }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let strongSelf = self else { return }
-            strongSelf.showNextQuestionOrResults()
-            [strongSelf.noButton, strongSelf.yesButton].forEach { $0.isEnabled.toggle() }
+            self?.showNextQuestionOrResults()
         }
     }
     
@@ -133,9 +133,17 @@ extension MovieQuizViewController {
     private func prepareLoadQuestion() {
         activityIndicator.startAnimating()
         questionIndexLabel.text = ""
-        previewImageView.image = UIImage()
         questionLabel.text = ""
         setPreviewImageViewBorder()
+        previewImageView.flipOver()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.questionFactory?.requestNextQuestion()
+        }
+    }
+    
+    private func preparePreviewImageView() {
+        guard let image = UIImage(named: "top250") else { return }
+        previewImageView.setFrontImage(image)
     }
 }
 
@@ -159,8 +167,6 @@ extension MovieQuizViewController {
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
         applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
         
-        previewImageView.contentMode = .scaleAspectFill
-        previewImageView.backgroundColor = .ypWhite
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
         
@@ -256,6 +262,7 @@ extension MovieQuizViewController {
         button.backgroundColor = .ypWhite
         button.layer.cornerRadius = Theme.buttonCornerRadius
         button.layer.masksToBounds = true
+        button.isEnabled = false
     }
     
     private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
