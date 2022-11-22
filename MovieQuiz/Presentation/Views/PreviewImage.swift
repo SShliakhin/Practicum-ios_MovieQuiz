@@ -14,7 +14,6 @@ class PreviewImage: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setup()
         applyStyle()
         applyLayout()
     }
@@ -26,9 +25,6 @@ class PreviewImage: UIView {
 
 // MARK: - Private methods
 extension PreviewImage {
-    private func setup() {
-    }
-    
     private func applyStyle() {
         frontImageView.image = UIImage()
         frontImageView.contentMode = .scaleAspectFit
