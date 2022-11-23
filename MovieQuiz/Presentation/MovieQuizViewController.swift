@@ -163,6 +163,7 @@ extension MovieQuizViewController {
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
         applyStyleLabel(for: questionIndexLabel, textAlignment: .right)
         
+        previewImageView.setBackImage(UIImage(named: "top250") ?? UIImage())
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
         
