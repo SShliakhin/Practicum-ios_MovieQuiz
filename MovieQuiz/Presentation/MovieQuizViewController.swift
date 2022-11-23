@@ -26,6 +26,9 @@ final class MovieQuizViewController: UIViewController {
     private var currentQuestionIndex = 0 {
         didSet {
             prepareLoadQuestion()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.questionFactory?.requestNextQuestion()
+            }
         }
     }
     
@@ -57,10 +60,14 @@ extension MovieQuizViewController {
     }
 
     private func show(quiz step: QuizStepViewModel) {
-        questionIndexLabel.text = step.questionNumber
+        questionIndexLabel.transformWithScaleAnimation(
+            text: step.questionNumber,
+            durationStart: 0.2,
+            durationFinish: 0.3,
+            scale: 1.25)
         previewImageView.setBackImage(step.image)
         previewImageView.flipOver()
-        questionLabel.animationTyping(step.question, duration: 0.05)
+        questionLabel.pushUpAnimation(text: step.question, duration: 0.5)
         [noButton, yesButton].forEach { $0.isEnabled = true }
     }
     
@@ -131,13 +138,8 @@ extension MovieQuizViewController {
     
     private func prepareLoadQuestion() {
         activityIndicator.startAnimating()
-        questionIndexLabel.text = ""
-        questionLabel.text = ""
         setPreviewImageViewBorder()
         previewImageView.flipOver()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.questionFactory?.requestNextQuestion()
-        }
     }
 }
 
@@ -159,7 +161,7 @@ extension MovieQuizViewController {
         view.backgroundColor = .ypBlack
         
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
-        applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
+        applyStyleLabel(for: questionIndexLabel, textAlignment: .right)
         
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
@@ -168,7 +170,6 @@ extension MovieQuizViewController {
         
         applyStyleLabel(
             for: questionLabel,
-               text: "Рейтинг этого фильма меньше чем 5?",
                font: Theme.boldLargeFont,
                textAlignment: .center,
                numberOfLines: 0)
@@ -236,7 +237,7 @@ extension MovieQuizViewController {
     // MARK: - Supporting methods
     private func applyStyleLabel(
         for label: UILabel,
-        text: String,
+        text: String = "",
         font: UIFont? = Theme.mediumLargeFont,
         textColor: UIColor = .ypWhite,
         textAlignment: NSTextAlignment = .left,
