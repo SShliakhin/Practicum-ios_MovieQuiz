@@ -8,85 +8,114 @@
 import Foundation
 
 final class QuestionFactory: QuestionFactoryProtocol {
-    private var questions: [QuizQuestion] = []
+    private let moviesLoader: MoviesLoading
+    private var movies: [MostPopularMovie] = []
+    private var unusedQuestionCount: Int = 0
     
     weak var delegate: QuestionFactoryDelegate?
     
-    init(delegate: QuestionFactoryDelegate?) {
-        self.delegate = delegate
-        questions = loadMockData()
+    init(moviesLoader: MoviesLoading) {
+        self.moviesLoader = moviesLoader
     }
     
     func requestNextQuestion() {
-        guard let index = (0..<questions.count).randomElement() else {
-            delegate?.didRecieveNextQuestion(self, question: nil)
-            return
-        }
-        let question = questions[safe: index]
-        if question != nil {
-            deleteIndexQuestionOrReloadQuestions(index)
-        }
-        delegate?.didRecieveNextQuestion(self, question: question)
-    }
-    
-    private func deleteIndexQuestionOrReloadQuestions(_ index: Int) {
-        guard questions.count != 1 else {
-            questions = loadMockData()
+        guard !movies.isEmpty else {
+            loadData()
             return
         }
         
-        let lastIndex = questions.count - 1
-        if index != lastIndex {
-            questions.swapAt(index, lastIndex)
+        DispatchQueue.global().async { [weak self] in
+            guard let self = self else { return }
+            let index = (0..<self.unusedQuestionCount).randomElement() ?? 0
+            
+            guard let movie = self.movies[safe: index] else { return }
+            
+            let question = self.convert(model: movie)
+            self.hideIndexQuestionOrUpdateAllQuestions(index)
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.didRecieveNextQuestion(self, question: question)
+            }
         }
-        questions.removeLast()
     }
-}
+    
+    func loadData() {
+        moviesLoader.loadMovies { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let mostPopularMovies):
+                guard !self.hasErrorMessage(
+                    mostPopularMovies.errorMessage,
+                    hasNoData: mostPopularMovies.items.isEmpty
+                ) else {
+                    return
+                }
+                
+                self.movies = mostPopularMovies.items
+                self.unusedQuestionCount = self.movies.count
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.delegate?.didLoadDataFromServer(self)
+                }
+            case .failure(let error):
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.delegate?.didFailToLoadData(self, with: error)
+                }
+            }
+        }
+    }
+    
+    private func hasErrorMessage(_ errorMessage: String?, hasNoData: Bool) -> Bool {
+        guard var errorMessage = errorMessage else {
+            return false
+        }
 
-// MARK: - Mock data
-extension QuestionFactory {
-    private func loadMockData() -> [QuizQuestion]{
-        [
-            QuizQuestion(
-                image: "The Godfather",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Dark Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Kill Bill",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Avengers",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Deadpool",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "The Green Knight",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: true),
-            QuizQuestion(
-                image: "Old",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "The Ice Age Adventures of Buck Wild",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Tesla",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false),
-            QuizQuestion(
-                image: "Vivarium",
-                text: "Рейтинг этого фильма больше чем 6?",
-                correctAnswer: false)
-        ]
+        if errorMessage.isEmpty, hasNoData {
+            errorMessage = "The data is not loaded!"
+        }
+        if !errorMessage.isEmpty {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.didFailToLoadData(self, with: ServiceError.general(reason: errorMessage))
+            }
+            return true
+        }
+        return false
+    }
+    
+    private func convert(model: MostPopularMovie) -> QuizQuestion {
+        var imageData = Data()
+        var hint = ""
+        do {
+            imageData = try Data(contentsOf: model.resizedImageURL)
+        } catch {
+            hint = "\(model.title) "
+        }
+        
+        let rating = Float(model.rating) ?? 0
+        let wordHowCompare = ["больше", "меньше"].randomElement() ?? "больше"
+        let addition = Float((0...15).randomElement() ?? 0) / 10
+        let number = 8.0 + addition
+        
+        let text = "\(hint)Рейтинг этого фильма \(wordHowCompare) чем \(number)?"
+        let correctAnswer = wordHowCompare == "больше" ? rating > number : rating < number
+        
+        return QuizQuestion(image: imageData,
+                            text: text,
+                            correctAnswer: correctAnswer)
+    }
+    
+    private func hideIndexQuestionOrUpdateAllQuestions(_ index: Int) {
+        guard unusedQuestionCount > 1 else {
+            unusedQuestionCount = movies.count
+            return
+        }
+        
+        unusedQuestionCount -= 1
+        if index != unusedQuestionCount {
+            movies.swapAt(index, unusedQuestionCount)
+        }
     }
 }

@@ -11,7 +11,7 @@ final class MovieQuizViewController: UIViewController {
     private let previewImageViewStackView = UIStackView()
     private let leftPaddingView = UIView()
     private let rightPaddingView = UIView()
-    private let previewImageView = UIImageView()
+    private let previewImageView = PreviewImage()
     
     private let questionLabelView = UIView()
     private let questionLabel = UILabel()
@@ -20,10 +20,15 @@ final class MovieQuizViewController: UIViewController {
     private let yesButton = UIButton()
     private let noButton = UIButton()
     
+    private let activityIndicator = UIActivityIndicatorView()
+    
     // MARK: - Properties
     private var currentQuestionIndex = 0 {
         didSet {
-            questionFactory?.requestNextQuestion()
+            prepareLoadQuestion()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.questionFactory?.requestNextQuestion()
+            }
         }
     }
     
@@ -55,11 +60,15 @@ extension MovieQuizViewController {
     }
 
     private func show(quiz step: QuizStepViewModel) {
-        questionIndexLabel.text = step.questionNumber
-        previewImageView.image = step.image
-        questionLabel.text = step.question
-        
-        setPreviewImageViewBorder()
+        questionIndexLabel.transformWithScaleAnimation(
+            text: step.questionNumber,
+            durationStart: 0.2,
+            durationFinish: 0.3,
+            scale: 1.25)
+        previewImageView.setBackImage(step.image)
+        previewImageView.flipOver()
+        questionLabel.pushUpAnimation(text: step.question, duration: 0.5)
+        [noButton, yesButton].forEach { $0.isEnabled = true }
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -71,7 +80,7 @@ extension MovieQuizViewController {
             self?.startQuiz()
         }
         
-        alertPresenter?.displayResult(alertModel, over: self)
+        alertPresenter?.displayAlert(alertModel, over: self)
     }
     
     private func showNextQuestionOrResults() {
@@ -103,26 +112,44 @@ extension MovieQuizViewController {
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
-        [noButton, yesButton].forEach { $0.isEnabled.toggle() }
+        [noButton, yesButton].forEach { $0.isEnabled = false }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let strongSelf = self else { return }
-            strongSelf.showNextQuestionOrResults()
-            [strongSelf.noButton, strongSelf.yesButton].forEach { $0.isEnabled.toggle() }
+            self?.showNextQuestionOrResults()
         }
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alertModel = AlertModel(
+            title: "Ошибка",
+            message: message,
+            buttonText: "Попробовать еще раз"
+        ) { [weak self] in
+            self?.startQuiz()
+        }
+        alertPresenter?.displayAlert(alertModel, over: self)
+    }
+    
+    private func prepareLoadQuestion() {
+        activityIndicator.startAnimating()
+        setPreviewImageViewBorder()
+        previewImageView.flipOver()
     }
 }
 
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        questionFactory = QuestionFactory(delegate: self)
+        let factory = QuestionFactory(moviesLoader: MoviesLoader())
+        factory.delegate = self
+        questionFactory = factory
+        
         alertPresenter = AlertPresenter()
         statisticService = StatisticServiceImplementation()
         
@@ -134,10 +161,9 @@ extension MovieQuizViewController {
         view.backgroundColor = .ypBlack
         
         applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
-        applyStyleLabel(for: questionIndexLabel, text: "1/10", textAlignment: .right)
+        applyStyleLabel(for: questionIndexLabel, textAlignment: .right)
         
-        previewImageView.contentMode = .scaleAspectFill
-        previewImageView.backgroundColor = .ypWhite
+        previewImageView.setBackImage(UIImage(named: "top250") ?? UIImage())
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
         previewImageView.layer.masksToBounds = true
         
@@ -145,13 +171,14 @@ extension MovieQuizViewController {
         
         applyStyleLabel(
             for: questionLabel,
-               text: "Рейтинг этого фильма меньше чем 5?",
                font: Theme.boldLargeFont,
                textAlignment: .center,
                numberOfLines: 0)
         
         applyStyleAnswerButton(for: yesButton, title: "Да")
         applyStyleAnswerButton(for: noButton, title: "Нет")
+        
+        activityIndicator.style = .large
     }
 
     private func applyLayout() {
@@ -182,8 +209,10 @@ extension MovieQuizViewController {
                spacing: Theme.spacing,
                axis: .vertical)
         
-        mainStackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(mainStackView)
+        [mainStackView, activityIndicator].forEach { item in
+            item.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(item)
+        }
         
         NSLayoutConstraint.activate([
             mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Theme.leftOffset),
@@ -200,13 +229,16 @@ extension MovieQuizViewController {
             questionLabel.bottomAnchor.constraint(equalTo: questionLabelView.bottomAnchor, constant: -Theme.topQuestionPadding),
             
             buttonsStackView.heightAnchor.constraint(equalToConstant: Theme.buttonHeight),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: previewImageView.centerYAnchor)
         ])
     }
     
     // MARK: - Supporting methods
     private func applyStyleLabel(
         for label: UILabel,
-        text: String,
+        text: String = "",
         font: UIFont? = Theme.mediumLargeFont,
         textColor: UIColor = .ypWhite,
         textAlignment: NSTextAlignment = .left,
@@ -225,7 +257,8 @@ extension MovieQuizViewController {
         button.setTitleColor(.ypBlack, for: .normal)
         button.backgroundColor = .ypWhite
         button.layer.cornerRadius = Theme.buttonCornerRadius
-        button.layer.masksToBounds = true // стоит ли выставлять? Критично только для image
+        button.layer.masksToBounds = true
+        button.isEnabled = false
     }
     
     private func setPreviewImageViewBorder(width: CGFloat = 0, color: CGColor = UIColor.ypWhite.cgColor) {
@@ -269,15 +302,37 @@ extension MovieQuizViewController {
 // MARK: - QuestionFactoryDelegate
 extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
+        activityIndicator.stopAnimating()
         guard let question = question else {
             return
         }
 
         currentQuestion = question
         let quiz = convert(model: question)
-        // TODO: - лучше оборачивать в сервисе
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: quiz)
+        show(quiz: quiz)
+    }
+    
+    func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
+        activityIndicator.stopAnimating()
+        currentQuestionIndex = 0
+    }
+    
+    func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
+        activityIndicator.stopAnimating()
+        var message = error.localizedDescription
+        guard let error = error as? ServiceError else {
+            showErrorAlert(message: message)
+            return
         }
+        
+        switch error {
+        case .network(statusCode: let statusCode):
+            message = "Networking error. Status code: \(statusCode)."
+        case .parsing:
+            message = "JSON data could not be parsed."
+        case .general(reason: let reason):
+            message = reason
+        }
+        showErrorAlert(message: message)
     }
 }

@@ -8,7 +8,7 @@
 import UIKit
 
 final class AlertPresenter: AlertPresenterProtocol {
-    func displayResult(_ model: AlertModel, over vc: UIViewController) {
+    func displayAlert(_ model: AlertModel, over vc: UIViewController) {
         let alert = UIAlertController(
             title: model.title,
             message: model.message,
