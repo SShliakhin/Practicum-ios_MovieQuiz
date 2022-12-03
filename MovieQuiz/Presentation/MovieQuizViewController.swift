@@ -99,7 +99,7 @@ extension MovieQuizViewController {
         }
     }
     
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         if isCorrect {
             correctAnswers += 1
         }
@@ -136,6 +136,8 @@ extension MovieQuizViewController {
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
+        presenter.viewController = self
+        
         let factory = QuestionFactory(moviesLoader: MoviesLoader())
         factory.delegate = self
         questionFactory = factory
@@ -278,14 +280,14 @@ extension MovieQuizViewController {
 
 // MARK: - Actions
 extension MovieQuizViewController {
-    @objc func yesButtonTapped() {
-        guard let currentQuestion = currentQuestion else { return }
-        showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
+    @objc private func yesButtonTapped() {
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonTapped()
     }
     
-    @objc func noButtonTapped() {
-        guard let currentQuestion = currentQuestion else { return }
-        showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
+    @objc private func noButtonTapped() {
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonTapped()
     }
 }
 
