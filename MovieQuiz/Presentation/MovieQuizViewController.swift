@@ -23,23 +23,15 @@ final class MovieQuizViewController: UIViewController {
     private let activityIndicator = UIActivityIndicatorView()
     
     // MARK: - Properties
-    private var currentQuestionIndex = 0 {
-        didSet {
-            prepareLoadQuestion()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.questionFactory?.requestNextQuestion()
-            }
-        }
-    }
-    
     private var correctAnswers = 0
     
-    private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticService?
+    
+    private let presenter = MovieQuizPresenter()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -55,8 +47,9 @@ final class MovieQuizViewController: UIViewController {
 // MARK: - State's methods
 extension MovieQuizViewController {
     private func startQuiz() {
-        currentQuestionIndex = 0
         correctAnswers = 0
+        presenter.resetQuestionIndex()
+        prepareLoadQuestion()
     }
 
     private func show(quiz step: QuizStepViewModel) {
@@ -84,13 +77,13 @@ extension MovieQuizViewController {
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1,
+        if presenter.isLastQuestion(),
            let statistics = statisticService {
-            statistics.store(correct: correctAnswers, total: questionsAmount)
+            statistics.store(correct: correctAnswers, total: presenter.questionsAmount)
             
             let bestGame = statistics.bestGame
             let text = """
-                Ваш результат: \(correctAnswers)/\(questionsAmount)
+                Ваш результат: \(correctAnswers)/\(presenter.questionsAmount)
                 Количество сыгранных квизов: \(statistics.gamesCount)
                 Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
                 Средняя точность: \(String(format: "%.2f", statistics.totalAccuracy))%
@@ -101,7 +94,8 @@ extension MovieQuizViewController {
                 buttonText: "Сыграть ещё раз")
             show(quiz: result)
         } else {
-            currentQuestionIndex += 1
+            presenter.switchToNextQuestion()
+            prepareLoadQuestion()
         }
     }
     
@@ -116,13 +110,6 @@ extension MovieQuizViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             self?.showNextQuestionOrResults()
         }
-    }
-    
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
     private func showErrorAlert(message: String) {
@@ -140,6 +127,9 @@ extension MovieQuizViewController {
         activityIndicator.startAnimating()
         setPreviewImageViewBorder()
         previewImageView.flipOver()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.questionFactory?.requestNextQuestion()
+        }
     }
 }
 
@@ -308,13 +298,13 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
         }
 
         currentQuestion = question
-        let quiz = convert(model: question)
+        let quiz = presenter.convert(model: question)
         show(quiz: quiz)
     }
     
     func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
         activityIndicator.stopAnimating()
-        currentQuestionIndex = 0
+        prepareLoadQuestion()
     }
     
     func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
