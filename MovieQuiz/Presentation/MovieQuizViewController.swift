@@ -23,14 +23,6 @@ final class MovieQuizViewController: UIViewController {
     private let activityIndicator = UIActivityIndicatorView()
     
     // MARK: - Properties
-    private var correctAnswers = 0
-    
-    private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
-    
-    private var alertPresenter: AlertPresenterProtocol?
-    private var statisticService: StatisticService?
-    
     private let presenter = MovieQuizPresenter()
     
     // MARK: - Lifecycle
@@ -40,19 +32,13 @@ final class MovieQuizViewController: UIViewController {
         applyStyle()
         applyLayout()
         
-        startQuiz()
+        presenter.resetGame()
     }
 }
 
 // MARK: - State's methods
 extension MovieQuizViewController {
-    private func startQuiz() {
-        correctAnswers = 0
-        presenter.resetQuestionIndex()
-        prepareLoadQuestion()
-    }
-
-    private func show(quiz step: QuizStepViewModel) {
+    func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.transformWithScaleAnimation(
             text: step.questionNumber,
             durationStart: 0.2,
@@ -64,72 +50,21 @@ extension MovieQuizViewController {
         [noButton, yesButton].forEach { $0.isEnabled = true }
     }
     
-    private func show(quiz result: QuizResultsViewModel) {
-        let alertModel = AlertModel(
-            title: result.title,
-            message: result.text,
-            buttonText: result.buttonText
-        ) { [weak self] in
-            self?.startQuiz()
-        }
-        
-        alertPresenter?.displayAlert(alertModel, over: self)
-    }
-    
-    private func showNextQuestionOrResults() {
-        if presenter.isLastQuestion(),
-           let statistics = statisticService {
-            statistics.store(correct: correctAnswers, total: presenter.questionsAmount)
-            
-            let bestGame = statistics.bestGame
-            let text = """
-                Ваш результат: \(correctAnswers)/\(presenter.questionsAmount)
-                Количество сыгранных квизов: \(statistics.gamesCount)
-                Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
-                Средняя точность: \(String(format: "%.2f", statistics.totalAccuracy))%
-                """
-            let result = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз")
-            show(quiz: result)
-        } else {
-            presenter.switchToNextQuestion()
-            prepareLoadQuestion()
-        }
-    }
-    
     func showAnswerResult(isCorrect: Bool) {
-        if isCorrect {
-            correctAnswers += 1
-        }
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         [noButton, yesButton].forEach { $0.isEnabled = false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.showNextQuestionOrResults()
-        }
     }
     
-    private func showErrorAlert(message: String) {
-        let alertModel = AlertModel(
-            title: "Ошибка",
-            message: message,
-            buttonText: "Попробовать еще раз"
-        ) { [weak self] in
-            self?.startQuiz()
-        }
-        alertPresenter?.displayAlert(alertModel, over: self)
-    }
-    
-    private func prepareLoadQuestion() {
+    func prepareLoadQuestion() {
         activityIndicator.startAnimating()
         setPreviewImageViewBorder()
         previewImageView.flipOver()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.questionFactory?.requestNextQuestion()
-        }
+    }
+    
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
     }
 }
 
@@ -137,13 +72,6 @@ extension MovieQuizViewController {
 extension MovieQuizViewController {
     private func setup() {
         presenter.viewController = self
-        
-        let factory = QuestionFactory(moviesLoader: MoviesLoader())
-        factory.delegate = self
-        questionFactory = factory
-        
-        alertPresenter = AlertPresenter()
-        statisticService = StatisticServiceImplementation()
         
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
@@ -281,50 +209,10 @@ extension MovieQuizViewController {
 // MARK: - Actions
 extension MovieQuizViewController {
     @objc private func yesButtonTapped() {
-        presenter.currentQuestion = currentQuestion
         presenter.yesButtonTapped()
     }
     
     @objc private func noButtonTapped() {
-        presenter.currentQuestion = currentQuestion
         presenter.noButtonTapped()
-    }
-}
-
-// MARK: - QuestionFactoryDelegate
-extension MovieQuizViewController: QuestionFactoryDelegate {
-    func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
-        activityIndicator.stopAnimating()
-        guard let question = question else {
-            return
-        }
-
-        currentQuestion = question
-        let quiz = presenter.convert(model: question)
-        show(quiz: quiz)
-    }
-    
-    func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
-        activityIndicator.stopAnimating()
-        prepareLoadQuestion()
-    }
-    
-    func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
-        activityIndicator.stopAnimating()
-        var message = error.localizedDescription
-        guard let error = error as? ServiceError else {
-            showErrorAlert(message: message)
-            return
-        }
-        
-        switch error {
-        case .network(statusCode: let statusCode):
-            message = "Networking error. Status code: \(statusCode)."
-        case .parsing:
-            message = "JSON data could not be parsed."
-        case .general(reason: let reason):
-            message = reason
-        }
-        showErrorAlert(message: message)
     }
 }
