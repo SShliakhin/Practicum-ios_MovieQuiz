@@ -43,7 +43,8 @@ extension MovieQuizViewController {
             text: step.questionNumber,
             durationStart: 0.2,
             durationFinish: 0.3,
-            scale: 1.25)
+            scale: 1.25
+        )
         previewImageView.setBackImage(step.image)
         previewImageView.flipOver()
         questionLabel.pushUpAnimation(text: step.question, duration: 0.5)
@@ -80,8 +81,8 @@ extension MovieQuizViewController {
     private func applyStyle() {
         view.backgroundColor = .ypBlack
         
-        applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
-        applyStyleLabel(for: questionIndexLabel, textAlignment: .right)
+        applyStyleLabel(questionTitleLabel, text: "Вопрос:")
+        applyStyleLabel(questionIndexLabel, textAlignment: .right)
         
         previewImageView.setBackImage(UIImage(named: "top250") ?? UIImage())
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
@@ -90,44 +91,51 @@ extension MovieQuizViewController {
         questionLabelView.backgroundColor = .ypBlack
         
         applyStyleLabel(
-            for: questionLabel,
-               font: Theme.boldLargeFont,
-               textAlignment: .center,
-               numberOfLines: 0)
+            questionLabel,
+            font: Theme.boldLargeFont,
+            textAlignment: .center,
+            numberOfLines: 0
+        )
         
-        applyStyleAnswerButton(for: yesButton, title: "Да")
-        applyStyleAnswerButton(for: noButton, title: "Нет")
+        applyStyleAnswerButton(yesButton, title: "Да")
+        applyStyleAnswerButton(noButton, title: "Нет")
         
         activityIndicator.style = .large
     }
 
     private func applyLayout() {
         arrangeStackView(
-            for: questionTitleStackView,
-               subviews: [questionTitleLabel, questionIndexLabel])
-        
+            questionTitleStackView,
+            subviews: [questionTitleLabel, questionIndexLabel]
+        )
         questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
         arrangeStackView(
-            for: previewImageViewStackView,
-               subviews: [leftPaddingView, previewImageView, rightPaddingView])
+            previewImageViewStackView,
+            subviews: [leftPaddingView, previewImageView, rightPaddingView]
+        )
         
         questionLabel.translatesAutoresizingMaskIntoConstraints = false
         questionLabelView.addSubview(questionLabel)
-        
         questionLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         
         arrangeStackView(
-            for: buttonsStackView,
-               subviews: [noButton, yesButton],
-               spacing: Theme.spacing,
-               distribution: .fillEqually)
-        
+            buttonsStackView,
+            subviews: [noButton, yesButton],
+            spacing: Theme.spacing,
+            distribution: .fillEqually
+        )
         arrangeStackView(
-            for: mainStackView,
-               subviews: [questionTitleStackView, previewImageViewStackView, questionLabelView, buttonsStackView],
-               spacing: Theme.spacing,
-               axis: .vertical)
+            mainStackView,
+            subviews: [
+                questionTitleStackView,
+                previewImageViewStackView,
+                questionLabelView,
+                buttonsStackView
+            ],
+            spacing: Theme.spacing,
+            axis: .vertical
+        )
         
         [mainStackView, activityIndicator].forEach { item in
             item.translatesAutoresizingMaskIntoConstraints = false
@@ -157,7 +165,7 @@ extension MovieQuizViewController {
     
     // MARK: - Supporting methods
     private func applyStyleLabel(
-        for label: UILabel,
+        _ label: UILabel,
         text: String = "",
         font: UIFont? = Theme.mediumLargeFont,
         textColor: UIColor = .ypWhite,
@@ -171,7 +179,7 @@ extension MovieQuizViewController {
         label.numberOfLines = numberOfLines
     }
     
-    private func applyStyleAnswerButton(for button: UIButton, title: String) {
+    private func applyStyleAnswerButton(_ button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = Theme.mediumLargeFont
         button.setTitleColor(.ypBlack, for: .normal)
@@ -187,7 +195,7 @@ extension MovieQuizViewController {
     }
     
     private func arrangeStackView(
-        for stackView: UIStackView,
+        _ stackView: UIStackView,
         subviews: [UIView],
         spacing: CGFloat = 0,
         axis: NSLayoutConstraint.Axis = .horizontal,

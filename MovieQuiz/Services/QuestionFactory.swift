@@ -102,9 +102,11 @@ final class QuestionFactory: QuestionFactoryProtocol {
         let text = "\(hint)Рейтинг этого фильма \(wordHowCompare) чем \(number)?"
         let correctAnswer = wordHowCompare == "больше" ? rating > number : rating < number
         
-        return QuizQuestion(image: imageData,
-                            text: text,
-                            correctAnswer: correctAnswer)
+        return .init(
+            image: imageData,
+            text: text,
+            correctAnswer: correctAnswer
+        )
     }
     
     private func hideIndexQuestionOrUpdateAllQuestions(_ index: Int) {

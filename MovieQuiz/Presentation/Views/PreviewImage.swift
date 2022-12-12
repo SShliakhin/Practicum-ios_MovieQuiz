@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PreviewImage: UIView {
+final class PreviewImage: UIView {
     private var isFlipped = true
     private var frontImageView = UIImageView()
     private var backImageView = UIImageView()
@@ -54,7 +54,16 @@ extension PreviewImage {
         let fromView = isFlipped ? backImageView : frontImageView
         let toView = isFlipped ? frontImageView : backImageView
         
-        UIView.transition(from: fromView, to: toView, duration: 0.5, options: [.curveEaseOut, .transitionFlipFromLeft, .showHideTransitionViews])
+        UIView.transition(
+            from: fromView,
+            to: toView,
+            duration: 0.5,
+            options: [
+                .curveEaseOut,
+                .transitionFlipFromLeft,
+                .showHideTransitionViews
+            ]
+        )
     }
     
     func setFrontImage(_ image: UIImage) {

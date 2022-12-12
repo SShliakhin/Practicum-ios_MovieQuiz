@@ -82,7 +82,8 @@ final class MovieQuizPresenter {
             let result = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
                 text: text,
-                buttonText: "Сыграть ещё раз")
+                buttonText: "Сыграть ещё раз"
+            )
             show(quiz: result)
         } else {
             currentQuestionIndex += 1
@@ -93,7 +94,8 @@ final class MovieQuizPresenter {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
+        )
     }
     
     private func didAnswer(isYes: Bool) {
