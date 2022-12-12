@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A1361592947DEE200F0D040 /* MovieQuizPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1361582947DEE200F0D040 /* MovieQuizPresenterTests.swift */; };
 		5A3AD60A29267441006B364B /* UILabel+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3AD60929267441006B364B /* UILabel+Extensions.swift */; };
 		5A3AD61029270BD4006B364B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3AD60F29270BD4006B364B /* APIKey.swift */; };
 		5A3C1074291C6DE000E6F8EE /* AlertModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3C1073291C6DE000E6F8EE /* AlertModel.swift */; };
@@ -62,6 +63,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5A1361582947DEE200F0D040 /* MovieQuizPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieQuizPresenterTests.swift; sourceTree = "<group>"; };
 		5A3AD60929267441006B364B /* UILabel+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UILabel+Extensions.swift"; sourceTree = "<group>"; };
 		5A3AD60F29270BD4006B364B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 		5A3C1073291C6DE000E6F8EE /* AlertModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertModel.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 				5AFE18A72938D5AF00382FDA /* MovieQuizTests.swift */,
 				5AFE18AE2938E51800382FDA /* ArrayTests.swift */,
 				5AFE18B02938EB6B00382FDA /* MoviesLoaderTests.swift */,
+				5A1361582947DEE200F0D040 /* MovieQuizPresenterTests.swift */,
 			);
 			path = MovieQuizTests;
 			sourceTree = "<group>";
@@ -425,6 +428,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A1361592947DEE200F0D040 /* MovieQuizPresenterTests.swift in Sources */,
 				5AFE18A82938D5AF00382FDA /* MovieQuizTests.swift in Sources */,
 				5AFE18B12938EB6B00382FDA /* MoviesLoaderTests.swift in Sources */,
 				5AFE18AF2938E51800382FDA /* ArrayTests.swift in Sources */,

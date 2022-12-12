@@ -29,7 +29,8 @@ final class MovieQuizPresenter {
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
     
-    weak var viewController: MovieQuizViewController?
+    typealias VCProtocols = MovieQuizViewControllerProtocol & UIViewController
+    weak var viewController: VCProtocols?
     
     init() {
         self.statisticService = StatisticServiceImplementation()
@@ -90,7 +91,7 @@ final class MovieQuizPresenter {
         }
     }
     
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,

@@ -1,5 +1,12 @@
 import UIKit
 
+protocol MovieQuizViewControllerProtocol: AnyObject {
+    func show(quiz step: QuizStepViewModel)
+    func showAnswerResult(isCorrect: Bool)
+    func prepareLoadQuestion()
+    func hideLoadingIndicator()
+}
+
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()
@@ -36,8 +43,8 @@ final class MovieQuizViewController: UIViewController {
     }
 }
 
-// MARK: - State's methods
-extension MovieQuizViewController {
+// MARK: - MovieQuizViewControllerProtocol
+extension MovieQuizViewController: MovieQuizViewControllerProtocol {
     func show(quiz step: QuizStepViewModel) {
         questionIndexLabel.transformWithScaleAnimation(
             text: step.questionNumber,
