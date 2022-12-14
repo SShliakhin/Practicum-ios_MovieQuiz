@@ -12,10 +12,19 @@ import XCTest
 @testable import MovieQuiz
 
 final class MovieQuizViewControllerProtocolMock: UIViewController, MovieQuizViewControllerProtocol {
-    func show(quiz step: QuizStepViewModel) { }
-    func showAnswerResult(isCorrect: Bool) { }
-    func prepareLoadQuestion() { }
-    func hideLoadingIndicator() { }
+    private(set) var viewModel: QuizStepViewModel?
+    
+    func show(quiz step: QuizStepViewModel) {
+        viewModel = step
+    }
+    func showAnswerResult(isCorrect: Bool) {}
+    func prepareLoadQuestion() {}
+    func hideLoadingIndicator() {}
+}
+
+final class QuestionFactoryMock: QuestionFactoryProtocol {
+    func requestNextQuestion() {}
+    func loadData() {}
 }
 
 final class MovieQuizPresenterTests: XCTestCase {
@@ -26,7 +35,9 @@ final class MovieQuizPresenterTests: XCTestCase {
 
         let emptyData = Data()
         let question = QuizQuestion(image: emptyData, text: "Question Text", correctAnswer: true)
-        let viewModel = sut.convert(model: question)
+        sut.didRecieveNextQuestion(QuestionFactoryMock(), question: question)
+        
+        guard let viewModel = viewControllerMock.viewModel else { return }
 
         XCTAssertNotNil(viewModel.image)
         XCTAssertEqual(viewModel.question, "Question Text")
