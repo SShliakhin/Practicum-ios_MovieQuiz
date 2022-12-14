@@ -27,17 +27,21 @@ final class MovieQuizPresenter {
     
     private let statisticService: StatisticService
     private var questionFactory: QuestionFactoryProtocol?
-    private var alertPresenter: AlertPresenterProtocol?
+    private let alertPresenter: AlertPresenterProtocol
     
-    typealias VCProtocols = MovieQuizViewControllerProtocol & UIViewController
-    weak var viewController: VCProtocols?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     
-    init() {
-        self.statisticService = StatisticServiceImplementation()
+    init(
+        statisticService: StatisticService,
+        alertPresenter: AlertPresenterProtocol,
+        viewController: MovieQuizViewControllerProtocol
+    ) {
+        self.statisticService = statisticService
+        self.alertPresenter = alertPresenter
+        self.viewController = viewController
         let factory = QuestionFactory(moviesLoader: MoviesLoader())
         factory.delegate = self
         questionFactory = factory
-        alertPresenter = AlertPresenter()
     }
     
     // MARK: Public methods
@@ -63,10 +67,7 @@ final class MovieQuizPresenter {
         ) { [weak self] in
             self?.resetGame()
         }
-        
-        if let vc = viewController {
-            alertPresenter?.displayAlert(alertModel, over: vc)
-        }
+        alertPresenter.displayAlert(alertModel)
     }
 
     private func showNextQuestionOrResults() {
@@ -120,9 +121,7 @@ final class MovieQuizPresenter {
         ) { [weak self] in
             self?.resetGame()
         }
-        if let vc = viewController {
-            alertPresenter?.displayAlert(alertModel, over: vc)
-        }
+        alertPresenter.displayAlert(alertModel)
     }
 } 
 

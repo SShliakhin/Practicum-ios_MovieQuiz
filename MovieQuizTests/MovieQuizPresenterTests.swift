@@ -11,7 +11,7 @@ import XCTest
 import XCTest
 @testable import MovieQuiz
 
-final class MovieQuizViewControllerProtocolMock: UIViewController, MovieQuizViewControllerProtocol {
+final class MovieQuizViewControllerProtocolMock: MovieQuizViewControllerProtocol {
     private(set) var viewModel: QuizStepViewModel?
     
     func show(quiz step: QuizStepViewModel) {
@@ -30,8 +30,14 @@ final class QuestionFactoryMock: QuestionFactoryProtocol {
 final class MovieQuizPresenterTests: XCTestCase {
     func testPresenterConvertModel() throws {
         let viewControllerMock = MovieQuizViewControllerProtocolMock()
-        let sut = MovieQuizPresenter()
-        sut.viewController = viewControllerMock
+        let statisticService = StatisticServiceImplementation()
+        let alertPresenter = AlertPresenter()
+        
+        let sut = MovieQuizPresenter(
+            statisticService: statisticService,
+            alertPresenter: alertPresenter,
+            viewController: viewControllerMock
+        )
 
         let emptyData = Data()
         let question = QuizQuestion(image: emptyData, text: "Question Text", correctAnswer: true)

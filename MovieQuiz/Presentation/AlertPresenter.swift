@@ -8,7 +8,9 @@
 import UIKit
 
 final class AlertPresenter: AlertPresenterProtocol {
-    func displayAlert(_ model: AlertModel, over vc: UIViewController) {
+    weak var viewController: UIViewController?
+    
+    func displayAlert(_ model: AlertModel) {
         let alert = UIAlertController(
             title: model.title,
             message: model.message,
@@ -20,6 +22,6 @@ final class AlertPresenter: AlertPresenterProtocol {
         }
         alert.addAction(action)
         
-        vc.present(alert, animated: true)
+        viewController?.present(alert, animated: true)
     }
 }

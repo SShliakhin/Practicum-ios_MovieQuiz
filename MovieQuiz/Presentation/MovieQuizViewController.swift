@@ -30,7 +30,7 @@ final class MovieQuizViewController: UIViewController {
     private let activityIndicator = UIActivityIndicatorView()
     
     // MARK: - Properties
-    private let presenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -39,7 +39,7 @@ final class MovieQuizViewController: UIViewController {
         applyStyle()
         applyLayout()
         
-        presenter.resetGame()
+        presenter?.resetGame()
     }
 }
 
@@ -79,10 +79,21 @@ extension MovieQuizViewController: MovieQuizViewControllerProtocol {
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        presenter.viewController = self
+        createPresenter()
         
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
+    }
+    
+    private func createPresenter() {
+        let statisticService = StatisticServiceImplementation()
+        let alertPresenter = AlertPresenter()
+        alertPresenter.viewController = self
+        presenter = MovieQuizPresenter(
+            statisticService: statisticService,
+            alertPresenter: alertPresenter,
+            viewController: self
+        )
     }
 
     private func applyStyle() {
@@ -224,10 +235,10 @@ extension MovieQuizViewController {
 // MARK: - Actions
 extension MovieQuizViewController {
     @objc private func yesButtonTapped() {
-        presenter.yesButtonTapped()
+        presenter?.yesButtonTapped()
     }
     
     @objc private func noButtonTapped() {
-        presenter.noButtonTapped()
+        presenter?.noButtonTapped()
     }
 }

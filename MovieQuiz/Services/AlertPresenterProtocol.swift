@@ -8,5 +8,5 @@
 import UIKit
 
 protocol AlertPresenterProtocol {
-    func displayAlert(_ model: AlertModel, over vc: UIViewController)
+    func displayAlert(_ model: AlertModel)
 }
