@@ -30,12 +30,9 @@ final class QuestionFactoryMock: QuestionFactoryProtocol {
 final class MovieQuizPresenterTests: XCTestCase {
     func testPresenterConvertModel() throws {
         let viewControllerMock = MovieQuizViewControllerProtocolMock()
-        let statisticService = StatisticServiceImplementation()
-        let alertPresenter = AlertPresenter()
         
         let sut = MovieQuizPresenter(
-            statisticService: statisticService,
-            alertPresenter: alertPresenter,
+            alertPresenter: AlertPresenter(viewController: UIViewController()),
             viewController: viewControllerMock
         )
 

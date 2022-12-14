@@ -32,13 +32,12 @@ final class MovieQuizPresenter {
     private weak var viewController: MovieQuizViewControllerProtocol?
     
     init(
-        statisticService: StatisticService,
         alertPresenter: AlertPresenterProtocol,
         viewController: MovieQuizViewControllerProtocol
     ) {
-        self.statisticService = statisticService
         self.alertPresenter = alertPresenter
         self.viewController = viewController
+        statisticService = StatisticServiceImplementation()
         let factory = QuestionFactory(moviesLoader: MoviesLoader())
         factory.delegate = self
         questionFactory = factory

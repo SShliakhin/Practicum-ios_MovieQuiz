@@ -8,7 +8,10 @@
 import UIKit
 
 final class AlertPresenter: AlertPresenterProtocol {
-    weak var viewController: UIViewController?
+    private weak var viewController: UIViewController?
+    init (viewController: UIViewController) {
+        self.viewController = viewController
+    }
     
     func displayAlert(_ model: AlertModel) {
         let alert = UIAlertController(
