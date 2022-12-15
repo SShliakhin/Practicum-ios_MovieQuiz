@@ -67,6 +67,7 @@ class MovieQuizUITests: XCTestCase {
         let noButton = app.buttons["NO"]
         let indexLabel = app.staticTexts["INDEX"]
         
+        sleep(3)
         for _ in 1...10 {
             noButton.tap()
             sleep(3)
