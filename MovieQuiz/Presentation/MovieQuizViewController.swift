@@ -109,6 +109,11 @@ extension MovieQuizViewController {
         applyStyleAnswerButton(noButton, title: "Нет")
         
         activityIndicator.style = .large
+        
+        // Tests
+        yesButton.accessibilityIdentifier = "YES"
+        noButton.accessibilityIdentifier = "NO"
+        questionIndexLabel.accessibilityIdentifier = "INDEX"
     }
 
     private func applyLayout() {

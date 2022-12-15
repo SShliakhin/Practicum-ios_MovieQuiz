@@ -30,6 +30,9 @@ extension PreviewImage {
         frontImageView.contentMode = .scaleAspectFit
         backImageView.image = UIImage()
         backImageView.contentMode = .scaleAspectFit
+        
+        // Tests
+        backImageView.image?.accessibilityIdentifier = "POSTER"
     }
     
     private func applyLayout() {
