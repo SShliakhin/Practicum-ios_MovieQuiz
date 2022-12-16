@@ -7,12 +7,16 @@
 
 import UIKit
 
-final class AlertPresenter: AlertPresenterProtocol {
+final class AlertPresenter {
     private weak var viewController: UIViewController?
+    
     init (viewController: UIViewController) {
         self.viewController = viewController
     }
-    
+}
+
+// MARK: - AlertPresenterProtocol
+extension AlertPresenter: AlertPresenterProtocol {
     func displayAlert(_ model: AlertModel) {
         let alert = UIAlertController(
             title: model.title,
