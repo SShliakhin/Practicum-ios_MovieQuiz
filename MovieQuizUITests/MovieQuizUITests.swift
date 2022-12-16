@@ -17,8 +17,6 @@ class MovieQuizUITests: XCTestCase {
         app = XCUIApplication()
         app.launch()
         
-        // это специальная настройка для тестов: если один тест не прошёл,
-        // то следующие тесты запускаться не будут; и правда, зачем ждать?
         continueAfterFailure = false
     }
     override func tearDownWithError() throws {
@@ -63,7 +61,7 @@ class MovieQuizUITests: XCTestCase {
         XCTAssertEqual(indexLabel.label, "3/10")
     }
     
-    func testAlert() {
+    func testAlertDidAppear() {
         let noButton = app.buttons["NO"]
         let indexLabel = app.staticTexts["INDEX"]
         
@@ -75,17 +73,28 @@ class MovieQuizUITests: XCTestCase {
         XCTAssertTrue(indexLabel.label == "10/10")
         
         sleep(5)
-        let alert = app.alerts["ALERT"] // как вариант: let alert = app.alerts.firstMatch
+        let alert = app.alerts["ALERT"]
         XCTAssertTrue(alert.exists)
         XCTAssertEqual(alert.label,"Этот раунд окончен!")
 
         let button = alert.buttons.firstMatch
         XCTAssertEqual(button.label, "Сыграть ещё раз")
+    }
+    
+    func testAlertDidDisappear() {
+        sleep(3)
+        for _ in 1...10 {
+            app.buttons["YES"].tap()
+            sleep(3)
+        }
+        
+        let alert = app.alerts.firstMatch
+        XCTAssertTrue(alert.exists)
 
-        button.tap()
+        alert.buttons.firstMatch.tap()
         sleep(3)
         
         XCTAssertFalse(alert.exists)
-        XCTAssertTrue(indexLabel.label == "1/10")
+        XCTAssertTrue(app.staticTexts["INDEX"].label == "1/10")
     }
 }
