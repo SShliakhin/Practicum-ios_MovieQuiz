@@ -14,7 +14,7 @@ import XCTest
 final class MovieQuizViewControllerProtocolMock: MovieQuizViewControllerProtocol {
     private(set) var viewModel: QuizStepViewModel?
     
-    func show(quiz step: QuizStepViewModel) {
+    func showQuizStep(_ step: QuizStepViewModel) {
         viewModel = step
     }
     func showAnswerResult(isCorrect: Bool) {}

@@ -55,7 +55,7 @@ final class MovieQuizPresenter {
     }
     
     // MARK: Private methods
-    private func show(quiz result: QuizResultsViewModel) {
+    private func showResult(_ result: QuizResultsViewModel) {
         let alertModel = AlertModel(
             title: result.title,
             message: result.text,
@@ -82,7 +82,7 @@ final class MovieQuizPresenter {
                 text: text,
                 buttonText: "Сыграть ещё раз"
             )
-            show(quiz: result)
+            showResult(result)
         } else {
             currentQuestionIndex += 1
         }
@@ -136,7 +136,7 @@ extension MovieQuizPresenter: QuestionFactoryDelegate {
 
         currentQuestion = question
         let quiz = convert(model: question)
-        viewController?.show(quiz: quiz)
+        viewController?.showQuizStep(quiz)
     }
     
     func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
