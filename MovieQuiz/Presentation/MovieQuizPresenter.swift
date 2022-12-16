@@ -10,10 +10,7 @@ import UIKit
 final class MovieQuizPresenter {
     private var currentQuestionIndex = 0 {
         didSet {
-            viewController?.prepareLoadQuestion()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.questionFactory?.requestNextQuestion()
-            }
+            loadQuestion()
         }
     }
     
@@ -88,6 +85,13 @@ final class MovieQuizPresenter {
             show(quiz: result)
         } else {
             currentQuestionIndex += 1
+        }
+    }
+    
+    private func loadQuestion() {
+        viewController?.prepareLoadQuestion()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.questionFactory?.requestNextQuestion()
         }
     }
     
