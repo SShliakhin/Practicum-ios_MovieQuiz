@@ -7,8 +7,17 @@
 
 import UIKit
 
-final class AlertPresenter: AlertPresenterProtocol {
-    func displayAlert(_ model: AlertModel, over vc: UIViewController) {
+final class AlertPresenter {
+    private weak var viewController: UIViewController?
+    
+    init (viewController: UIViewController) {
+        self.viewController = viewController
+    }
+}
+
+// MARK: - AlertPresenterProtocol
+extension AlertPresenter: AlertPresenterProtocol {
+    func displayAlert(_ model: AlertModel) {
         let alert = UIAlertController(
             title: model.title,
             message: model.message,
@@ -20,6 +29,9 @@ final class AlertPresenter: AlertPresenterProtocol {
         }
         alert.addAction(action)
         
-        vc.present(alert, animated: true)
+        // Tests
+        alert.view.accessibilityIdentifier = "ALERT"
+        
+        viewController?.present(alert, animated: true)
     }
 }

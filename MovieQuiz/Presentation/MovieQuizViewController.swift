@@ -1,5 +1,12 @@
 import UIKit
 
+protocol MovieQuizViewControllerProtocol: AnyObject {
+    func showQuizStep(_ step: QuizStepViewModel)
+    func showAnswerResult(isCorrect: Bool)
+    func prepareLoadQuestion()
+    func hideLoadingIndicator()
+}
+
 final class MovieQuizViewController: UIViewController {
     
     private let mainStackView = UIStackView()
@@ -23,23 +30,10 @@ final class MovieQuizViewController: UIViewController {
     private let activityIndicator = UIActivityIndicatorView()
     
     // MARK: - Properties
-    private var currentQuestionIndex = 0 {
-        didSet {
-            prepareLoadQuestion()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.questionFactory?.requestNextQuestion()
-            }
-        }
-    }
-    
-    private var correctAnswers = 0
-    
-    private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
-    
-    private var alertPresenter: AlertPresenterProtocol?
-    private var statisticService: StatisticService?
+    private lazy var presenter = MovieQuizPresenter(
+        alertPresenter: AlertPresenter(viewController: self),
+        viewController: self
+    )
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -48,120 +42,55 @@ final class MovieQuizViewController: UIViewController {
         applyStyle()
         applyLayout()
         
-        startQuiz()
+        presenter.resetGame()
     }
 }
 
-// MARK: - State's methods
-extension MovieQuizViewController {
-    private func startQuiz() {
-        currentQuestionIndex = 0
-        correctAnswers = 0
-    }
-
-    private func show(quiz step: QuizStepViewModel) {
+// MARK: - MovieQuizViewControllerProtocol
+extension MovieQuizViewController: MovieQuizViewControllerProtocol {
+    func showQuizStep(_ step: QuizStepViewModel) {
         questionIndexLabel.transformWithScaleAnimation(
             text: step.questionNumber,
             durationStart: 0.2,
             durationFinish: 0.3,
-            scale: 1.25)
+            scale: 1.25
+        )
         previewImageView.setBackImage(step.image)
         previewImageView.flipOver()
         questionLabel.pushUpAnimation(text: step.question, duration: 0.5)
         [noButton, yesButton].forEach { $0.isEnabled = true }
     }
     
-    private func show(quiz result: QuizResultsViewModel) {
-        let alertModel = AlertModel(
-            title: result.title,
-            message: result.text,
-            buttonText: result.buttonText
-        ) { [weak self] in
-            self?.startQuiz()
-        }
-        
-        alertPresenter?.displayAlert(alertModel, over: self)
-    }
-    
-    private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1,
-           let statistics = statisticService {
-            statistics.store(correct: correctAnswers, total: questionsAmount)
-            
-            let bestGame = statistics.bestGame
-            let text = """
-                Ваш результат: \(correctAnswers)/\(questionsAmount)
-                Количество сыгранных квизов: \(statistics.gamesCount)
-                Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
-                Средняя точность: \(String(format: "%.2f", statistics.totalAccuracy))%
-                """
-            let result = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз")
-            show(quiz: result)
-        } else {
-            currentQuestionIndex += 1
-        }
-    }
-    
-    private func showAnswerResult(isCorrect: Bool) {
-        if isCorrect {
-            correctAnswers += 1
-        }
+    func showAnswerResult(isCorrect: Bool) {
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         setPreviewImageViewBorder(width: Theme.imageAnswerBorderWidht, color: color)
         
         [noButton, yesButton].forEach { $0.isEnabled = false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.showNextQuestionOrResults()
-        }
     }
     
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-    }
-    
-    private func showErrorAlert(message: String) {
-        let alertModel = AlertModel(
-            title: "Ошибка",
-            message: message,
-            buttonText: "Попробовать еще раз"
-        ) { [weak self] in
-            self?.startQuiz()
-        }
-        alertPresenter?.displayAlert(alertModel, over: self)
-    }
-    
-    private func prepareLoadQuestion() {
+    func prepareLoadQuestion() {
         activityIndicator.startAnimating()
         setPreviewImageViewBorder()
         previewImageView.flipOver()
+    }
+    
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
     }
 }
 
 // MARK: - Private methods setup and UI
 extension MovieQuizViewController {
     private func setup() {
-        let factory = QuestionFactory(moviesLoader: MoviesLoader())
-        factory.delegate = self
-        questionFactory = factory
-        
-        alertPresenter = AlertPresenter()
-        statisticService = StatisticServiceImplementation()
-        
         yesButton.addTarget(self, action: #selector(yesButtonTapped), for: .primaryActionTriggered)
         noButton.addTarget(self, action: #selector(noButtonTapped), for: .primaryActionTriggered)
     }
-
+    
     private func applyStyle() {
         view.backgroundColor = .ypBlack
         
-        applyStyleLabel(for: questionTitleLabel, text: "Вопрос:")
-        applyStyleLabel(for: questionIndexLabel, textAlignment: .right)
+        applyStyleLabel(questionTitleLabel, text: "Вопрос:")
+        applyStyleLabel(questionIndexLabel, textAlignment: .right)
         
         previewImageView.setBackImage(UIImage(named: "top250") ?? UIImage())
         previewImageView.layer.cornerRadius = Theme.imageCornerRadius
@@ -170,44 +99,56 @@ extension MovieQuizViewController {
         questionLabelView.backgroundColor = .ypBlack
         
         applyStyleLabel(
-            for: questionLabel,
-               font: Theme.boldLargeFont,
-               textAlignment: .center,
-               numberOfLines: 0)
+            questionLabel,
+            font: Theme.boldLargeFont,
+            textAlignment: .center,
+            numberOfLines: 0
+        )
         
-        applyStyleAnswerButton(for: yesButton, title: "Да")
-        applyStyleAnswerButton(for: noButton, title: "Нет")
+        applyStyleAnswerButton(yesButton, title: "Да")
+        applyStyleAnswerButton(noButton, title: "Нет")
         
         activityIndicator.style = .large
+        
+        // Tests
+        yesButton.accessibilityIdentifier = "YES"
+        noButton.accessibilityIdentifier = "NO"
+        questionIndexLabel.accessibilityIdentifier = "INDEX"
     }
 
     private func applyLayout() {
         arrangeStackView(
-            for: questionTitleStackView,
-               subviews: [questionTitleLabel, questionIndexLabel])
-        
+            questionTitleStackView,
+            subviews: [questionTitleLabel, questionIndexLabel]
+        )
         questionIndexLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         
         arrangeStackView(
-            for: previewImageViewStackView,
-               subviews: [leftPaddingView, previewImageView, rightPaddingView])
+            previewImageViewStackView,
+            subviews: [leftPaddingView, previewImageView, rightPaddingView]
+        )
         
         questionLabel.translatesAutoresizingMaskIntoConstraints = false
         questionLabelView.addSubview(questionLabel)
-        
         questionLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         
         arrangeStackView(
-            for: buttonsStackView,
-               subviews: [noButton, yesButton],
-               spacing: Theme.spacing,
-               distribution: .fillEqually)
-        
+            buttonsStackView,
+            subviews: [noButton, yesButton],
+            spacing: Theme.spacing,
+            distribution: .fillEqually
+        )
         arrangeStackView(
-            for: mainStackView,
-               subviews: [questionTitleStackView, previewImageViewStackView, questionLabelView, buttonsStackView],
-               spacing: Theme.spacing,
-               axis: .vertical)
+            mainStackView,
+            subviews: [
+                questionTitleStackView,
+                previewImageViewStackView,
+                questionLabelView,
+                buttonsStackView
+            ],
+            spacing: Theme.spacing,
+            axis: .vertical
+        )
         
         [mainStackView, activityIndicator].forEach { item in
             item.translatesAutoresizingMaskIntoConstraints = false
@@ -237,7 +178,7 @@ extension MovieQuizViewController {
     
     // MARK: - Supporting methods
     private func applyStyleLabel(
-        for label: UILabel,
+        _ label: UILabel,
         text: String = "",
         font: UIFont? = Theme.mediumLargeFont,
         textColor: UIColor = .ypWhite,
@@ -251,7 +192,7 @@ extension MovieQuizViewController {
         label.numberOfLines = numberOfLines
     }
     
-    private func applyStyleAnswerButton(for button: UIButton, title: String) {
+    private func applyStyleAnswerButton(_ button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = Theme.mediumLargeFont
         button.setTitleColor(.ypBlack, for: .normal)
@@ -267,7 +208,7 @@ extension MovieQuizViewController {
     }
     
     private func arrangeStackView(
-        for stackView: UIStackView,
+        _ stackView: UIStackView,
         subviews: [UIView],
         spacing: CGFloat = 0,
         axis: NSLayoutConstraint.Axis = .horizontal,
@@ -288,51 +229,11 @@ extension MovieQuizViewController {
 
 // MARK: - Actions
 extension MovieQuizViewController {
-    @objc func yesButtonTapped() {
-        guard let currentQuestion = currentQuestion else { return }
-        showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
+    @objc private func yesButtonTapped() {
+        presenter.yesButtonTapped()
     }
     
-    @objc func noButtonTapped() {
-        guard let currentQuestion = currentQuestion else { return }
-        showAnswerResult(isCorrect: false == currentQuestion.correctAnswer)
-    }
-}
-
-// MARK: - QuestionFactoryDelegate
-extension MovieQuizViewController: QuestionFactoryDelegate {
-    func didRecieveNextQuestion(_ questionFactory: QuestionFactoryProtocol, question: QuizQuestion?) {
-        activityIndicator.stopAnimating()
-        guard let question = question else {
-            return
-        }
-
-        currentQuestion = question
-        let quiz = convert(model: question)
-        show(quiz: quiz)
-    }
-    
-    func didLoadDataFromServer(_ questionFactory: QuestionFactoryProtocol) {
-        activityIndicator.stopAnimating()
-        currentQuestionIndex = 0
-    }
-    
-    func didFailToLoadData(_ questionFactory: QuestionFactoryProtocol, with error: Error) {
-        activityIndicator.stopAnimating()
-        var message = error.localizedDescription
-        guard let error = error as? ServiceError else {
-            showErrorAlert(message: message)
-            return
-        }
-        
-        switch error {
-        case .network(statusCode: let statusCode):
-            message = "Networking error. Status code: \(statusCode)."
-        case .parsing:
-            message = "JSON data could not be parsed."
-        case .general(reason: let reason):
-            message = reason
-        }
-        showErrorAlert(message: message)
+    @objc private func noButtonTapped() {
+        presenter.noButtonTapped()
     }
 }
